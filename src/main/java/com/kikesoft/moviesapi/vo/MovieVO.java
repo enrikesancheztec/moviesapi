@@ -3,6 +3,8 @@ package com.kikesoft.moviesapi.vo;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+import com.kikesoft.moviesapi.enumeration.Rating;
+
 public class MovieVO implements Serializable {
 
     private static final long serialVersionUID = 1739356800000L;
@@ -11,13 +13,13 @@ public class MovieVO implements Serializable {
     private String name;
     private LocalDate launchDate;
     private Integer duration;
-    private Double rating;
+    private Rating rating;
     private String description;
 
     public MovieVO() {
     }
 
-    public MovieVO(Long id, String name, LocalDate launchDate, Integer duration, Double rating, String description) {
+    public MovieVO(Long id, String name, LocalDate launchDate, Integer duration, Rating rating, String description) {
         this.id = id;
         this.name = name;
         this.launchDate = launchDate;
@@ -58,11 +60,11 @@ public class MovieVO implements Serializable {
         this.duration = duration;
     }
 
-    public Double getRating() {
+    public Rating getRating() {
         return rating;
     }
 
-    public void setRating(Double rating) {
+    public void setRating(Rating rating) {
         this.rating = rating;
     }
 
