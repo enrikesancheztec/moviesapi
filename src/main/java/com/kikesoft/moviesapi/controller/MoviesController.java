@@ -26,7 +26,7 @@ class MoviesController {
                     "Luke Skywalker begins his journey as a Jedi Knight...");
             return ResponseEntity.ok(movie);
         } else {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.notFound().build();
         }
     }
 }

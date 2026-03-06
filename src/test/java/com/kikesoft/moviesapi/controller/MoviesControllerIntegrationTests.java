@@ -23,4 +23,9 @@ class MoviesControllerIntegrationTests {
             .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.description").exists());
     }
 
+    @Test
+    void getMovieById_notExistingMovie() throws Exception {
+        mockMvc.perform(get("/movies/2"))
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
+    }
 }
