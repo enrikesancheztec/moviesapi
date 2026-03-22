@@ -5,6 +5,11 @@ import org.springframework.stereotype.Repository;
 
 import com.kikesoft.moviesapi.entity.MovieEntity;
 
+/**
+ * Repository for CRUD operations over {@link MovieEntity}.
+ *
+ * @author Enrique Sanchez
+ */
 @Repository
 public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
 }
