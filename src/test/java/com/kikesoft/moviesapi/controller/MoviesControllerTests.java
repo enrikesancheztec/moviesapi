@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.kikesoft.moviesapi.enumeration.Rating;
 import com.kikesoft.moviesapi.service.MoviesService;
@@ -71,5 +74,53 @@ class MoviesControllerTests {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].id").value(1))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[1].id").value(2));
+    }
+
+    @Test
+    void addNewMovie_withoutId_returnsCreated() throws Exception {
+        when(moviesService.add(argThat(movie -> movie != null && movie.getId() == null))).thenReturn(
+                new MovieVO(
+                        3L,
+                        "Inception",
+                        LocalDate.of(2010, 7, 16),
+                        148,
+                        Rating.PG_13,
+                        "A thief enters dreams to steal corporate secrets."
+                )
+        );
+
+        mockMvc.perform(post("/movies")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Inception",
+                                  "launchDate": "2010-07-16",
+                                  "duration": 148,
+                                  "rating": "PG_13",
+                                  "description": "A thief enters dreams to steal corporate secrets."
+                                }
+                                """))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isCreated())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.id").value(3))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.name").value("Inception"));
+    }
+
+    @Test
+    void addNewMovie_withId_returnsBadRequest() throws Exception {
+        when(moviesService.add(argThat(movie -> movie != null && movie.getId() != null))).thenReturn(null);
+
+        mockMvc.perform(post("/movies")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "id": 99,
+                                  "name": "Inception",
+                                  "launchDate": "2010-07-16",
+                                  "duration": 148,
+                                  "rating": "PG_13",
+                                  "description": "A thief enters dreams to steal corporate secrets."
+                                }
+                                """))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest());
     }
 }

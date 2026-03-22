@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.kikesoft.moviesapi.entity.MovieEntity;
 import com.kikesoft.moviesapi.mapper.MovieMapper;
 import com.kikesoft.moviesapi.repository.MovieRepository;
 import com.kikesoft.moviesapi.vo.MovieVO;
@@ -46,10 +47,17 @@ public class MoviesDAO {
      * Persists a movie and returns the stored representation.
      *
      * @param movieVO movie to persist
-     * @return persisted movie
+     * @return persisted movie or {@code null} when the input is {@code null}
      */
     public MovieVO save(MovieVO movieVO) {
-        return MovieMapper.toVO(movieRepository.save(MovieMapper.toEntity(movieVO)));
+        MovieEntity movieEntity = MovieMapper.toEntity(movieVO);
+        if (movieEntity == null) {
+            return null;
+        }
+        if (movieEntity.getId() == null) {
+            movieEntity.setNew(true);
+        }
+        return MovieMapper.toVO(movieRepository.save(movieEntity));
     }
 
     /**
