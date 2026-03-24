@@ -9,15 +9,34 @@ import org.springframework.stereotype.Service;
 import com.kikesoft.moviesapi.dao.MoviesDAO;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
+/**
+ * Service layer that exposes movie read operations and delegates persistence access to the DAO.
+ *
+ * @author Enrique Sanchez
+ */
 @Service
 public class MoviesService {
+    /**
+     * DAO dependency used to access movie data.
+     */
     @Autowired
     private MoviesDAO moviesDAO;
 
+    /**
+     * Finds a movie by id.
+     *
+     * @param id movie identifier
+     * @return optional movie representation
+     */
     public Optional<MovieVO> findById(Long id) {
         return moviesDAO.findById(id);
     }
 
+    /**
+     * Retrieves all movies available in the persistence layer.
+     *
+     * @return list of movies
+     */
     public List<MovieVO> findAll() {
         return moviesDAO.findAll();
     }

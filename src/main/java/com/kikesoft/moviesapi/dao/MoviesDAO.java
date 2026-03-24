@@ -10,23 +10,53 @@ import com.kikesoft.moviesapi.mapper.MovieMapper;
 import com.kikesoft.moviesapi.repository.MovieRepository;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
+/**
+ * Data access component that coordinates movie persistence operations.
+ *
+ * @author Enrique Sanchez
+ */
 @Repository
 public class MoviesDAO {
+    /**
+     * Repository dependency used for movie persistence operations.
+     */
     @Autowired
     private MovieRepository movieRepository;
 
+    /**
+     * Finds a movie by id.
+     *
+     * @param id movie identifier
+     * @return optional movie representation
+     */
     public Optional<MovieVO> findById(Long id) {
         return movieRepository.findById(id).map(MovieMapper::toVO);
     }
 
+    /**
+     * Retrieves all movies currently stored.
+     *
+     * @return list of movies
+     */
     public List<MovieVO> findAll() {
         return movieRepository.findAll().stream().map(MovieMapper::toVO).toList();
     }
 
+    /**
+     * Persists a movie and returns the stored representation.
+     *
+     * @param movieVO movie to persist
+     * @return persisted movie
+     */
     public MovieVO save(MovieVO movieVO) {
         return MovieMapper.toVO(movieRepository.save(MovieMapper.toEntity(movieVO)));
     }
 
+    /**
+     * Deletes a movie by id.
+     *
+     * @param id movie identifier
+     */
     public void deleteById(Long id) {
         movieRepository.deleteById(id);
     }
