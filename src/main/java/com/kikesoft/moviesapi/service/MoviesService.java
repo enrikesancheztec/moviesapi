@@ -40,4 +40,14 @@ public class MoviesService {
     public List<MovieVO> findAll() {
         return moviesDAO.findAll();
     }
+
+    /**
+     * Adds a new movie to the persistence layer.
+     *
+     * @param movieVO movie payload to persist
+     * @return persisted movie representation or {@code null} when the input is {@code null}
+     */
+    public MovieVO add(MovieVO movieVO) {
+        return moviesDAO.save(movieVO);
+    }
 }

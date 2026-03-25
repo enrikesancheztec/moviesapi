@@ -107,6 +107,39 @@ http://localhost:8080/v3/api-docs
 
 4. Use Swagger UI to execute at least one endpoint.
 
+## API Endpoints
+Base URL:
+
+```text
+http://localhost:8080
+```
+
+Available endpoints:
+
+| Method | Path | Description | Success Response |
+| --- | --- | --- | --- |
+| GET | `/movies` | Returns all movies. | `200 OK` with a JSON array of movies. |
+| GET | `/movies/{id}` | Returns one movie by id. | `200 OK` with a movie JSON object, or `404 Not Found` when missing. |
+| POST | `/movies` | Creates a new movie. | `201 Created` with the saved movie JSON object, or `400 Bad Request` for invalid payload. |
+
+Movie JSON fields:
+
+```text
+id, name, launchDate, duration, rating, description
+```
+
+Example POST payload:
+
+```json
+{
+  "name": "Inception",
+  "launchDate": "2010-07-16",
+  "duration": 148,
+  "rating": "PG_13",
+  "description": "A thief enters dreams to steal corporate secrets."
+}
+```
+
 ## Configuration Notes
 - The database connection depends on external values from `env.properties` (imported by `application.properties`).
 - The `target/` folder contains build artifacts and must not be versioned.

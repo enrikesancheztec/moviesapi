@@ -3,6 +3,8 @@ package com.kikesoft.moviesapi.entity;
 import java.io.Serializable;
 import java.time.LocalDate;
 
+import org.springframework.data.domain.Persistable;
+
 import com.kikesoft.moviesapi.enumeration.Rating;
 
 import jakarta.persistence.Column;
@@ -12,7 +14,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * Persistence entity that represents a movie record stored in the database.
@@ -21,7 +26,7 @@ import jakarta.persistence.Table;
  */
 @Entity
 @Table(name = "movies")
-public class MovieEntity implements Serializable {
+public class MovieEntity implements Serializable, Persistable<Long> {
 
     /**
      * Serializable version identifier.
@@ -67,6 +72,13 @@ public class MovieEntity implements Serializable {
     private String description;
 
     /**
+     * Entity new-state flag used by Spring Data persistence semantics.
+     * This field is not persisted to the database.
+     */
+    @Transient
+    private boolean isNew = false;
+
+    /**
      * Creates an empty movie entity.
      */
     public MovieEntity() {
@@ -98,8 +110,37 @@ public class MovieEntity implements Serializable {
      *
      * @return movie id
      */
+    @Override
     public Long getId() {
         return id;
+    }
+
+    /**
+     * Indicates whether this entity should be treated as new by Spring Data.
+     *
+     * @return {@code true} when the entity is new; otherwise {@code false}
+     */
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    /**
+     * Updates the new-state flag used by Spring Data.
+     *
+     * @param isNew {@code true} when the entity should be treated as new
+     */
+    public void setNew(boolean isNew) {
+        this.isNew = isNew;
+    }
+
+    /**
+     * Marks the entity as not new after it is persisted or loaded.
+     */
+    @PostPersist
+    @PostLoad
+    public void markNotNew() {
+        this.isNew = false;
     }
 
     /**
