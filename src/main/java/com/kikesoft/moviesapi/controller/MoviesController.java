@@ -1,7 +1,6 @@
 package com.kikesoft.moviesapi.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,13 +23,8 @@ class MoviesController {
 
     @GetMapping("/{id}")
     ResponseEntity<MovieVO> getById(@PathVariable Long id) {
-        Optional<MovieVO> movie = moviesService.findById(id);
-
-        if (movie.isPresent()) {
-            return ResponseEntity.ok(movie.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+            MovieVO movie = moviesService.findById(id);
+            return ResponseEntity.ok(movie);
     }
 
     @GetMapping
