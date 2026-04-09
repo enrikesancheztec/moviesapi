@@ -1,7 +1,6 @@
 package com.kikesoft.moviesapi.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,7 @@ public class MoviesService {
      * @param id movie identifier
      * @return optional movie representation
      */
-    public Optional<MovieVO> findById(Long id) {
+    public MovieVO findById(Long id) {
         return moviesDAO.findById(id);
     }
 

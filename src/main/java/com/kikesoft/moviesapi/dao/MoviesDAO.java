@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kikesoft.moviesapi.entity.MovieEntity;
+import com.kikesoft.moviesapi.exception.ItemNotFoundException;
 import com.kikesoft.moviesapi.mapper.MovieMapper;
 import com.kikesoft.moviesapi.repository.MovieRepository;
 import com.kikesoft.moviesapi.vo.MovieVO;
@@ -30,8 +31,14 @@ public class MoviesDAO {
      * @param id movie identifier
      * @return optional movie representation
      */
-    public Optional<MovieVO> findById(Long id) {
-        return movieRepository.findById(id).map(MovieMapper::toVO);
+    public MovieVO findById(Long id) {
+        Optional<MovieVO> movieVO = movieRepository.findById(id).map(MovieMapper::toVO);
+
+        if (movieVO.isEmpty()) {
+            throw new ItemNotFoundException("Movie with id " + id + " not found");
+        }
+
+        return movieVO.get();
     }
 
     /**
