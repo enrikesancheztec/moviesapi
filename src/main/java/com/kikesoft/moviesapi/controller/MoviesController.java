@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kikesoft.moviesapi.service.MoviesService;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/movies")
 class MoviesController {
@@ -39,7 +41,7 @@ class MoviesController {
      * @return persisted movie representation
      */
     @PostMapping
-    ResponseEntity<MovieVO> addNew(@RequestBody MovieVO movieVO) {
+    ResponseEntity<MovieVO> addNew(@Valid @RequestBody MovieVO movieVO) {
         MovieVO savedMovie = moviesService.add(movieVO);
         if (savedMovie == null) {
             return ResponseEntity.badRequest().build();
