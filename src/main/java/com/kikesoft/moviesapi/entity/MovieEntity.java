@@ -49,12 +49,13 @@ public class MovieEntity implements Serializable, Persistable<Long> {
     /**
      * Release date of the movie.
      */
-    @Column(name = "launch_date")
+    @Column(name = "launch_date", nullable = false)
     private LocalDate launchDate;
 
     /**
      * Runtime in minutes.
      */
+    @Column(nullable = false)   
     private Integer duration;
 
     /**

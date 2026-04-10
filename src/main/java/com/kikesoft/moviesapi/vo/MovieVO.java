@@ -5,15 +5,27 @@ import java.time.LocalDate;
 
 import com.kikesoft.moviesapi.enumeration.Rating;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
 public class MovieVO implements Serializable {
 
     private static final long serialVersionUID = 1739356800000L;
 
     private Long id;
+    @NotBlank(message = "Name is mandatory")
     private String name;
+    @NotNull(message = "Launch date is mandatory")
     private LocalDate launchDate;
+    @NotNull(message = "Duration is mandatory")
     private Integer duration;
     private Rating rating;
+    @Pattern(
+            regexp = "^(?!.(?i)(?:--|;|/\\|\\/|\\b(?:select|insert|update|delete|drop|truncate|alter|union|exec|execute|xp_)\\b|\\bor\\b\\s+\\d+=\\d+|\\band\\b\\s+\\d+=\\d+)).$",
+            flags = Pattern.Flag.CASE_INSENSITIVE,
+            message = "Description contains invalid characters"
+    )
     private String description;
 
     public MovieVO() {
