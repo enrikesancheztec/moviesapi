@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
+import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
 
 /**
@@ -51,6 +52,21 @@ public class GlobalControllerAdvice {
         body.put("message", die.getMessage());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    /**
+     * Handles request id mismatch errors and returns HTTP 400 with a structured response body.
+     *
+     * @param iime source exception
+     * @return response entity with error payload
+     */
+    @ExceptionHandler(ItemIdMismatchException.class)
+    public ResponseEntity<Object> handleItemIdMismatch(final ItemIdMismatchException iime) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("message", iime.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     /**

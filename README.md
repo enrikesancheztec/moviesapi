@@ -121,6 +121,7 @@ Available endpoints:
 | GET | `/movies` | Returns all movies. | `200 OK` with a JSON array of movies. |
 | GET | `/movies/{id}` | Returns one movie by id. | `200 OK` with a movie JSON object, or `404 Not Found` when missing. |
 | POST | `/movies` | Creates a new movie. | `201 Created` with the saved movie JSON object, or `400 Bad Request` for invalid payload. |
+| PUT | `/movies/{id}` | Updates an existing movie by id. | `200 OK` with the updated movie JSON object. |
 
 Movie JSON fields:
 
@@ -139,6 +140,37 @@ Example POST payload:
   "description": "A thief enters dreams to steal corporate secrets."
 }
 ```
+
+Example update request:
+
+```text
+PUT /movies/2
+```
+
+Example PUT payload:
+
+```json
+{
+  "id": 2,
+  "name": "Speed",
+  "launchDate": "1994-06-10",
+  "duration": 116,
+  "rating": "R",
+  "description": "A bomb is planted on a city bus that will explode if its speed drops below 50 mph."
+}
+```
+
+Update endpoint error responses:
+
+- `400 Bad Request` when payload validation fails.
+- `400 Bad Request` when path id and payload id do not match.
+- `404 Not Found` when the target movie id does not exist.
+- `409 Conflict` when another movie already has the same `name` and `launchDate`.
+
+Notes for update:
+
+- The resource id is taken from the path (`/movies/{id}`).
+- If `id` is present in the payload, it must match the path id.
 
 ## Configuration Notes
 - The database connection depends on external values from `env.properties` (imported by `application.properties`).
