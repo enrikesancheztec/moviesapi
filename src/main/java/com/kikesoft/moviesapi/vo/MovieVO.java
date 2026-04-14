@@ -7,8 +7,12 @@ import com.kikesoft.moviesapi.enumeration.Rating;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 
+/**
+ * Value object used by API endpoints to expose movie data.
+ *
+ * @author Enrique Sanchez
+ */
 public class MovieVO implements Serializable {
 
     private static final long serialVersionUID = 1739356800000L;
@@ -21,16 +25,24 @@ public class MovieVO implements Serializable {
     @NotNull(message = "Duration is mandatory")
     private Integer duration;
     private Rating rating;
-    @Pattern(
-            regexp = "^(?!.(?i)(?:--|;|/\\|\\/|\\b(?:select|insert|update|delete|drop|truncate|alter|union|exec|execute|xp_)\\b|\\bor\\b\\s+\\d+=\\d+|\\band\\b\\s+\\d+=\\d+)).$",
-            flags = Pattern.Flag.CASE_INSENSITIVE,
-            message = "Description contains invalid characters"
-    )
     private String description;
 
+    /**
+     * Creates an empty movie value object.
+     */
     public MovieVO() {
     }
 
+    /**
+     * Creates a movie value object with all fields.
+     *
+     * @param id movie identifier
+     * @param name movie title
+     * @param launchDate release date
+     * @param duration runtime in minutes
+     * @param rating age rating classification
+     * @param description short movie description
+     */
     public MovieVO(Long id, String name, LocalDate launchDate, Integer duration, Rating rating, String description) {
         this.id = id;
         this.name = name;
@@ -40,54 +52,120 @@ public class MovieVO implements Serializable {
         this.description = description;
     }
 
+    /**
+     * Returns the movie identifier.
+     *
+     * @return movie id
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Sets the movie identifier.
+     *
+     * @param id movie id
+     */
     public void setId(Long id) {
         this.id = id;
     }
 
+    /**
+     * Returns the movie title.
+     *
+     * @return movie title
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the movie title.
+     *
+     * @param name movie title
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns the movie release date.
+     *
+     * @return launch date
+     */
     public LocalDate getLaunchDate() {
         return launchDate;
     }
 
+    /**
+     * Sets the movie release date.
+     *
+     * @param launchDate release date
+     */
     public void setLaunchDate(LocalDate launchDate) {
         this.launchDate = launchDate;
     }
 
+    /**
+     * Returns the movie runtime in minutes.
+     *
+     * @return duration in minutes
+     */
     public Integer getDuration() {
         return duration;
     }
 
+    /**
+     * Sets the movie runtime in minutes.
+     *
+     * @param duration duration in minutes
+     */
     public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
+    /**
+     * Returns the movie age rating classification.
+     *
+     * @return movie rating
+     */
     public Rating getRating() {
         return rating;
     }
 
+    /**
+     * Sets the movie age rating classification.
+     *
+     * @param rating movie rating
+     */
     public void setRating(Rating rating) {
         this.rating = rating;
     }
 
+    /**
+     * Returns the movie description.
+     *
+     * @return movie description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Sets the movie description.
+     *
+     * @param description movie description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Compares this value object with another object.
+     *
+     * @param o object to compare
+     * @return {@code true} when both objects have the same state
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -103,6 +181,11 @@ public class MovieVO implements Serializable {
         return description != null ? description.equals(movieVO.description) : movieVO.description == null;
     }
 
+    /**
+     * Computes a hash code using all fields.
+     *
+     * @return hash code value
+     */
     @Override
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
@@ -114,6 +197,11 @@ public class MovieVO implements Serializable {
         return result;
     }
 
+    /**
+     * Returns a printable representation of this value object.
+     *
+     * @return string representation
+     */
     @Override
     public String toString() {
         return "MovieVO{" +

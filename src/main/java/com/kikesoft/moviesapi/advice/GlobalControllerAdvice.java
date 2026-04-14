@@ -15,9 +15,20 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
 
+/**
+ * Global exception handlers for MVC controllers.
+ *
+ * @author Enrique Sanchez
+ */
 @ControllerAdvice
 public class GlobalControllerAdvice {
 
+    /**
+     * Handles not-found errors and returns HTTP 404 with a structured response body.
+     *
+     * @param infe source exception
+     * @return response entity with error payload
+     */
     @ExceptionHandler(ItemNotFoundException.class)
     public ResponseEntity<Object> handleItemNotFound(final ItemNotFoundException infe) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -27,6 +38,12 @@ public class GlobalControllerAdvice {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    /**
+     * Handles duplicate-item errors and returns HTTP 409 with a structured response body.
+     *
+     * @param die source exception
+     * @return response entity with error payload
+     */
     @ExceptionHandler(DuplicatedItemException.class)
     public ResponseEntity<Object> handleDuplicatedItem(final DuplicatedItemException die) {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -36,7 +53,12 @@ public class GlobalControllerAdvice {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
-    //@ResponseStatus(HttpStatus.BAD_REQUEST)
+    /**
+     * Handles bean validation failures and returns HTTP 400 with field-level errors.
+     *
+     * @param manve validation exception
+     * @return response entity with validation errors by field
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(
             MethodArgumentNotValidException manve) {
@@ -46,7 +68,7 @@ public class GlobalControllerAdvice {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        //return errors;
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 }

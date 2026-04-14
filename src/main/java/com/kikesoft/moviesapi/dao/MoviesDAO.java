@@ -1,5 +1,6 @@
 package com.kikesoft.moviesapi.dao;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +49,24 @@ public class MoviesDAO {
      */
     public List<MovieVO> findAll() {
         return movieRepository.findAll().stream().map(MovieMapper::toVO).toList();
+    }
+
+    /**
+     * Finds a movie by name and launch date.
+     *
+     * @param name movie title
+     * @param launchDate release date
+     * @return movie representation
+     * @throws ItemNotFoundException if no movie is found with the given name and launch date
+     */
+    public MovieVO findByNameAndLaunchDate(final String name, final LocalDate launchDate) {
+        Optional<MovieEntity> movieEntity = movieRepository.findByNameAndLaunchDate(name, launchDate);
+        
+        if (movieEntity.isEmpty()) {
+            throw new ItemNotFoundException("Movie with name '" + name + "' and launch date " + launchDate + " not found");
+        }
+        
+        return MovieMapper.toVO(movieEntity.get());
     }
 
     /**
