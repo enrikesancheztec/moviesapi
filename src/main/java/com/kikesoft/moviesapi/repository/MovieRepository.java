@@ -1,6 +1,7 @@
 package com.kikesoft.moviesapi.repository;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -21,5 +22,5 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
      * @param launchDate movie release date
      * @return matching movie entity or {@code null} when no record matches
      */
-    MovieEntity findByNameAndLaunchDate(String name, LocalDate launchDate);
+    Optional<MovieEntity> findByNameAndLaunchDate(String name, LocalDate launchDate);
 }

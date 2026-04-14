@@ -60,13 +60,13 @@ public class MoviesDAO {
      * @throws ItemNotFoundException if no movie is found with the given name and launch date
      */
     public MovieVO findByNameAndLaunchDate(final String name, final LocalDate launchDate) {
-        MovieEntity movieEntity = movieRepository.findByNameAndLaunchDate(name, launchDate);
+        Optional<MovieEntity> movieEntity = movieRepository.findByNameAndLaunchDate(name, launchDate);
         
-        if (movieEntity == null) {
+        if (movieEntity.isEmpty()) {
             throw new ItemNotFoundException("Movie with name '" + name + "' and launch date " + launchDate + " not found");
         }
         
-        return MovieMapper.toVO(movieEntity);
+        return MovieMapper.toVO(movieEntity.get());
     }
 
     /**
