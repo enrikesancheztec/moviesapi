@@ -71,6 +71,7 @@ public class MoviesDAO {
 
     /**
      * Persists a movie and returns the stored representation.
+     * This method supports both create and update operations.
      *
      * @param movieVO movie to persist
      * @return persisted movie or {@code null} when the input is {@code null}

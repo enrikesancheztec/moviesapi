@@ -75,7 +75,6 @@ public class MoviesService {
      * @throws DuplicatedItemException when another movie already uses the same
      * name and launch date
      */
-    /* 
     public MovieVO update(final Long id, final MovieVO movieVO) {
         if (movieVO.getId() != null && !movieVO.getId().equals(id)) {
             throw new ItemIdMismatchException(
@@ -98,5 +97,5 @@ public class MoviesService {
 
         movieVO.setId(id);
         return moviesDAO.save(movieVO);
-    }*/
+    }
 }
