@@ -23,6 +23,8 @@ public final class MovieMapper {
     /**
      * Converts a {@link MovieEntity} into a {@link MovieVO}.
      * Returns {@code null} when the input is {@code null}.
+        * Maps producer details into {@code producerId} and nested {@code producer}
+        * when available.
      *
      * @param entity persistence entity
      * @return value object representation or {@code null}
@@ -55,6 +57,7 @@ public final class MovieMapper {
     /**
      * Converts a {@link MovieVO} into a {@link MovieEntity}.
      * Returns {@code null} when the input is {@code null}.
+        * Producer association is resolved in DAO layer using {@code producerId}.
      *
      * @param movieVO value object
      * @return persistence entity representation or {@code null}

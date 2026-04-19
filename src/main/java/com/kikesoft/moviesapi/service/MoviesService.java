@@ -22,6 +22,7 @@ import com.kikesoft.moviesapi.vo.MovieVO;
  */
 @Service
 public class MoviesService {
+
     private static final Logger LOGGER = LogManager.getLogger(MoviesService.class);
 
     /**
@@ -34,7 +35,7 @@ public class MoviesService {
      * Finds a movie by id.
      *
      * @param id movie identifier
-        * @return movie representation
+     * @return movie representation
      */
     public MovieVO findById(Long id) {
         LOGGER.debug("Service findById - id={}", id);
@@ -57,6 +58,8 @@ public class MoviesService {
      * @param movieVO movie payload to persist
      * @return persisted movie representation or {@code null} when the input is
      * {@code null}
+     * @throws MissingRequiredFieldException when {@code producerId} is missing
+     * for movie creation
      */
     public MovieVO add(MovieVO movieVO) {
         if (movieVO.getProducerId() == null) {

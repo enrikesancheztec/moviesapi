@@ -166,8 +166,12 @@ http://localhost:8080
 Movie JSON fields:
 
 ```text
-id, name, launchDate, duration, rating, description
+id, name, launchDate, duration, rating, description, producerId, producer
 ```
+
+- `producerId` is required on `POST /movies`.
+- `producerId` is optional on `PUT /movies/{id}`.
+- `producer` is read-only response data with producer details.
 
 Example POST payload:
 
@@ -177,7 +181,27 @@ Example POST payload:
   "launchDate": "2010-07-16",
   "duration": 148,
   "rating": "PG_13",
-  "description": "A thief enters dreams to steal corporate secrets."
+  "description": "A thief enters dreams to steal corporate secrets.",
+  "producerId": 10
+}
+```
+
+Example POST response payload:
+
+```json
+{
+  "id": 3,
+  "name": "Inception",
+  "launchDate": "2010-07-16",
+  "duration": 148,
+  "rating": "PG_13",
+  "description": "A thief enters dreams to steal corporate secrets.",
+  "producerId": 10,
+  "producer": {
+    "id": 10,
+    "name": "John Smith",
+    "profile": "Award-winning producer with 20 years of experience."
+  }
 }
 ```
 
@@ -196,7 +220,8 @@ Example PUT payload:
   "launchDate": "1994-06-10",
   "duration": 116,
   "rating": "R",
-  "description": "A bomb is planted on a city bus that will explode if its speed drops below 50 mph."
+  "description": "A bomb is planted on a city bus that will explode if its speed drops below 50 mph.",
+  "producerId": 10
 }
 ```
 
@@ -204,7 +229,9 @@ Update endpoint error responses:
 
 - `400 Bad Request` when payload validation fails.
 - `400 Bad Request` when path id and payload id do not match.
+- `400 Bad Request` when `producerId` is missing on movie creation (`POST /movies`).
 - `404 Not Found` when the target movie id does not exist.
+- `404 Not Found` when `producerId` does not exist.
 - `409 Conflict` when another movie already has the same `name` and `launchDate`.
 
 Notes for update:
