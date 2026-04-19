@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import com.kikesoft.moviesapi.enumeration.Rating;
+import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
 import com.kikesoft.moviesapi.service.MoviesService;
@@ -176,5 +177,68 @@ class MoviesControllerTests {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message")
                         .value("Path id 3 does not match request body id 99"));
+    }
+
+    @Test
+    void addNewMovie_whenMovieIsDuplicated_returnsConflict() throws Exception {
+        when(moviesService.add(argThat(movie -> movie != null && movie.getId() == null)))
+                .thenThrow(new DuplicatedItemException("Movie with name Inception and launch date 2010-07-16 already exists"));
+
+        mockMvc.perform(post("/movies")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Inception",
+                                  "launchDate": "2010-07-16",
+                                  "duration": 148,
+                                  "rating": "PG_13",
+                                  "description": "A thief enters dreams to steal corporate secrets."
+                                }
+                                """))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message")
+                        .value("Movie with name Inception and launch date 2010-07-16 already exists"));
+    }
+
+    @Test
+    void updateMovie_whenMovieNotFound_returnsNotFound() throws Exception {
+        when(moviesService.update(argThat(id -> id != null && id.equals(999L)),
+                argThat(movie -> movie != null && "Inception".equals(movie.getName()))))
+                .thenThrow(new ItemNotFoundException("Movie with id 999 not found"));
+
+        mockMvc.perform(put("/movies/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Inception",
+                                  "launchDate": "2010-07-16",
+                                  "duration": 148,
+                                  "rating": "PG_13",
+                                  "description": "A thief enters dreams to steal corporate secrets."
+                                }
+                                """))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message")
+                        .value("Movie with id 999 not found"));
+    }
+
+    @Test
+    void updateMovie_whenServiceReturnsNull_returnsBadRequest() throws Exception {
+        when(moviesService.update(argThat(id -> id != null && id.equals(3L)),
+                argThat(movie -> movie != null && "Inception".equals(movie.getName()))))
+                .thenReturn(null);
+
+        mockMvc.perform(put("/movies/3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Inception",
+                                  "launchDate": "2010-07-16",
+                                  "duration": 148,
+                                  "rating": "PG_13",
+                                  "description": "A thief enters dreams to steal corporate secrets."
+                                }
+                                """))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest());
     }
 }
