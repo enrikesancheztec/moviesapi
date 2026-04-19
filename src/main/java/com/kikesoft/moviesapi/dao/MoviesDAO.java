@@ -30,7 +30,7 @@ public class MoviesDAO {
      * Finds a movie by id.
      *
      * @param id movie identifier
-     * @return optional movie representation
+        * @return movie representation
      */
     public MovieVO findById(Long id) {
         Optional<MovieVO> movieVO = movieRepository.findById(id).map(MovieMapper::toVO);

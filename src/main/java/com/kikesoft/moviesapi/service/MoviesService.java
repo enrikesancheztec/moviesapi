@@ -30,7 +30,7 @@ public class MoviesService {
      * Finds a movie by id.
      *
      * @param id movie identifier
-     * @return optional movie representation
+        * @return movie representation
      */
     public MovieVO findById(Long id) {
         return moviesDAO.findById(id);
