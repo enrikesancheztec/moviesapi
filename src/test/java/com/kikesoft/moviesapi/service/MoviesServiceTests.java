@@ -20,6 +20,7 @@ import com.kikesoft.moviesapi.enumeration.Rating;
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
+import com.kikesoft.moviesapi.exception.MissingRequiredFieldException;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,6 +78,8 @@ class MoviesServiceTests {
                 148,
                 Rating.PG_13,
                 "A thief enters dreams to steal corporate secrets.");
+        newMovie.setProducerId(10L);
+
         MovieVO savedMovie = new MovieVO(
                 3L,
                 "Inception",
@@ -84,6 +87,7 @@ class MoviesServiceTests {
                 148,
                 Rating.PG_13,
                 "A thief enters dreams to steal corporate secrets.");
+        savedMovie.setProducerId(10L);
 
         when(moviesDAO.findByNameAndLaunchDate("Inception", LocalDate.of(2010, 7, 16)))
                 .thenThrow(new ItemNotFoundException("Movie not found"));
@@ -105,6 +109,7 @@ class MoviesServiceTests {
                 148,
                 Rating.PG_13,
                 "A thief enters dreams to steal corporate secrets.");
+                newMovie.setProducerId(10L);
 
         when(moviesDAO.findByNameAndLaunchDate("Inception", LocalDate.of(2010, 7, 16)))
                 .thenReturn(new MovieVO(
@@ -122,6 +127,26 @@ class MoviesServiceTests {
 
         verify(moviesDAO, never()).add(org.mockito.ArgumentMatchers.any(MovieVO.class));
         verify(moviesDAO, never()).update(org.mockito.ArgumentMatchers.any(MovieVO.class));
+    }
+
+    @Test
+    void add_whenProducerIdIsMissing_throwsMissingRequiredFieldException() {
+        MovieVO newMovie = new MovieVO(
+                null,
+                "Inception",
+                LocalDate.of(2010, 7, 16),
+                148,
+                Rating.PG_13,
+                "A thief enters dreams to steal corporate secrets.");
+
+        MissingRequiredFieldException exception = assertThrows(
+                MissingRequiredFieldException.class,
+                () -> moviesService.add(newMovie));
+
+        assertEquals("producerId is required when creating a movie", exception.getMessage());
+        verify(moviesDAO, never()).findByNameAndLaunchDate(org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.any(LocalDate.class));
+        verify(moviesDAO, never()).add(org.mockito.ArgumentMatchers.any(MovieVO.class));
     }
 
     @Test

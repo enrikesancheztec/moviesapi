@@ -11,6 +11,7 @@ import com.kikesoft.moviesapi.dao.MoviesDAO;
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
+import com.kikesoft.moviesapi.exception.MissingRequiredFieldException;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
 /**
@@ -58,6 +59,11 @@ public class MoviesService {
      * {@code null}
      */
     public MovieVO add(MovieVO movieVO) {
+        if (movieVO.getProducerId() == null) {
+            LOGGER.warn("Service add - missing required producerId for movie name='{}'", movieVO.getName());
+            throw new MissingRequiredFieldException("producerId is required when creating a movie");
+        }
+
         LOGGER.debug("Service add - validating movie with name='{}' and launchDate='{}'",
                 movieVO.getName(), movieVO.getLaunchDate());
         try {
