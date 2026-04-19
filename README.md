@@ -52,7 +52,26 @@ JPA_DDL_AUTO=update
 JPA_SHOW_SQL=true
 APP_CORS_ALLOWED_ORIGINS=http://localhost:3000
 APP_CORS_ALLOW_CREDENTIALS=true
+logging.level.root=INFO
+logging.level.com.kikesoft.moviesapi=DEBUG
 ```
+
+## Logging Configuration (Development)
+Recommended local logging configuration is:
+
+- `logging.level.root=INFO`
+- `logging.level.com.kikesoft.moviesapi=DEBUG`
+
+Why this is recommended for development:
+
+- `root=INFO` reduces framework noise from Spring/Hibernate.
+- `com.kikesoft.moviesapi=DEBUG` keeps detailed logs for application code (controller/service/dao/mapper).
+- This balance improves troubleshooting without flooding the console.
+
+Where to configure it:
+
+- Local runtime: `env.properties`
+- Tests: `src/test/resources/application-test.properties` (independent from `env.properties`)
 
 ## Maven Commands (Daily Usage)
 From the project root:
@@ -195,6 +214,7 @@ Notes for update:
 
 ## Configuration Notes
 - Runtime database connection depends on external values from `env.properties` (imported by `application.properties`).
+- Runtime log levels can be configured in `env.properties` (recommended: `root=INFO`, `com.kikesoft.moviesapi=DEBUG`).
 - Test configuration is self-contained in `src/test/resources/application-test.properties` and uses H2 in-memory.
 - The `target/` folder contains build artifacts and must not be versioned.
 
@@ -207,3 +227,5 @@ Notes for update:
   Confirm the app is started and open `http://localhost:8080/swagger-ui.html`.
 - CORS issues from frontend clients:
   Set `APP_CORS_ALLOWED_ORIGINS` and `APP_CORS_ALLOW_CREDENTIALS` correctly in `env.properties`.
+- Too much logging noise in local console:
+  Use `logging.level.root=INFO` and keep app-level debug with `logging.level.com.kikesoft.moviesapi=DEBUG`.
