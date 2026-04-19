@@ -35,7 +35,7 @@ public final class MovieMapper {
 
         LOGGER.debug("Mapper toVO - mapping entity id={}", entity.getId());
 
-        return new MovieVO(
+        MovieVO movieVO = new MovieVO(
                 entity.getId(),
                 entity.getName(),
                 entity.getLaunchDate(),
@@ -43,6 +43,13 @@ public final class MovieMapper {
                 entity.getRating(),
                 entity.getDescription()
         );
+
+        if (entity.getProducer() != null) {
+            movieVO.setProducerId(entity.getProducer().getId());
+            movieVO.setProducer(ProducerMapper.toVO(entity.getProducer()));
+        }
+
+        return movieVO;
     }
 
     /**
