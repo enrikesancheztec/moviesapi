@@ -13,6 +13,7 @@ import com.kikesoft.moviesapi.entity.MovieEntity;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
 import com.kikesoft.moviesapi.mapper.MovieMapper;
 import com.kikesoft.moviesapi.repository.MovieRepository;
+import com.kikesoft.moviesapi.repository.ProducerRepository;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
 /**
@@ -29,6 +30,12 @@ public class MoviesDAO {
      */
     @Autowired
     private MovieRepository movieRepository;
+
+    /**
+     * Repository dependency used for producer lookups.
+     */
+    @Autowired
+    private ProducerRepository producerRepository;
 
     /**
      * Finds a movie by id.
@@ -91,11 +98,23 @@ public class MoviesDAO {
      */
     public MovieVO add(MovieVO movieVO) {
         LOGGER.debug("DAO add - mapping and persisting new movie");
+        if (movieVO == null) {
+            LOGGER.warn("DAO add - input movie is null, nothing to persist");
+            return null;
+        }
+
         MovieEntity movieEntity = MovieMapper.toEntity(movieVO);
         if (movieEntity == null) {
             LOGGER.warn("DAO add - input movie is null, nothing to persist");
             return null;
         }
+
+        if (movieVO.getProducerId() != null) {
+            movieEntity.setProducer(producerRepository.findById(movieVO.getProducerId())
+                    .orElseThrow(() -> new ItemNotFoundException(
+                            "Producer with id " + movieVO.getProducerId() + " not found")));
+        }
+
         movieEntity.setNew(true);
         MovieVO saved = MovieMapper.toVO(movieRepository.save(movieEntity));
         LOGGER.debug("DAO add - movie persisted with id={}", saved != null ? saved.getId() : null);
@@ -110,11 +129,26 @@ public class MoviesDAO {
      */
     public MovieVO update(MovieVO movieVO) {
         LOGGER.debug("DAO update - mapping and persisting movie update for id={}", movieVO != null ? movieVO.getId() : null);
+        if (movieVO == null) {
+            LOGGER.warn("DAO update - input movie is null, nothing to persist");
+            return null;
+        }
+
         MovieEntity movieEntity = MovieMapper.toEntity(movieVO);
         if (movieEntity == null) {
             LOGGER.warn("DAO update - input movie is null, nothing to persist");
             return null;
         }
+
+        if (movieVO.getProducerId() != null) {
+            movieEntity.setProducer(producerRepository.findById(movieVO.getProducerId())
+                    .orElseThrow(() -> new ItemNotFoundException(
+                            "Producer with id " + movieVO.getProducerId() + " not found")));
+        } else if (movieVO.getId() != null) {
+            movieRepository.findById(movieVO.getId())
+                .ifPresent(existingMovie -> movieEntity.setProducer(existingMovie.getProducer()));
+        }
+
         MovieVO updated = MovieMapper.toVO(movieRepository.save(movieEntity));
         LOGGER.debug("DAO update - movie updated with id={}", updated != null ? updated.getId() : null);
         return updated;
