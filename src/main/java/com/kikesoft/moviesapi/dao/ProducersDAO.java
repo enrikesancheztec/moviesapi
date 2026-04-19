@@ -61,6 +61,26 @@ public class ProducersDAO {
     }
 
     /**
+     * Finds a producer by name.
+     *
+     * @param name producer name
+     * @return producer representation
+     * @throws ItemNotFoundException if no producer is found with the given name
+     */
+    public ProducerVO findByName(String name) {
+        LOGGER.debug("DAO findByName - name='{}'", name);
+        Optional<ProducerEntity> producerEntity = producerRepository.findByName(name);
+
+        if (producerEntity.isEmpty()) {
+            LOGGER.warn("DAO findByName - producer not found for name='{}'", name);
+            throw new ItemNotFoundException("Producer with name '" + name + "' not found");
+        }
+
+        LOGGER.debug("DAO findByName - producer found for name='{}'", name);
+        return ProducerMapper.toVO(producerEntity.get());
+    }
+
+    /**
      * Persists a new producer and returns the stored representation.
      *
      * @param producerVO producer to persist
