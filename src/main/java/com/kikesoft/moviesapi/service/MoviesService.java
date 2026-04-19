@@ -2,6 +2,8 @@ package com.kikesoft.moviesapi.service;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ import com.kikesoft.moviesapi.vo.MovieVO;
  */
 @Service
 public class MoviesService {
+    private static final Logger LOGGER = LogManager.getLogger(MoviesService.class);
 
     /**
      * DAO dependency used to access movie data.
@@ -33,6 +36,7 @@ public class MoviesService {
         * @return movie representation
      */
     public MovieVO findById(Long id) {
+        LOGGER.debug("Service findById - id={}", id);
         return moviesDAO.findById(id);
     }
 
@@ -42,6 +46,7 @@ public class MoviesService {
      * @return list of movies
      */
     public List<MovieVO> findAll() {
+        LOGGER.debug("Service findAll - fetching movies list");
         return moviesDAO.findAll();
     }
 
@@ -53,12 +58,17 @@ public class MoviesService {
      * {@code null}
      */
     public MovieVO add(MovieVO movieVO) {
+        LOGGER.debug("Service add - validating movie with name='{}' and launchDate='{}'",
+                movieVO.getName(), movieVO.getLaunchDate());
         try {
             moviesDAO.findByNameAndLaunchDate(movieVO.getName(), movieVO.getLaunchDate());
+            LOGGER.warn("Service add - duplicated movie detected for name='{}' and launchDate='{}'",
+                    movieVO.getName(), movieVO.getLaunchDate());
             throw new DuplicatedItemException("Movie with name " + movieVO.getName()
                     + " and launch date " + movieVO.getLaunchDate() + " already exists");
         } catch (final ItemNotFoundException infe) {
             // Movie not found, proceed with creation
+            LOGGER.debug("Service add - movie not found by name/date, proceeding with creation");
             return moviesDAO.add(movieVO);
         }
     }
@@ -76,26 +86,33 @@ public class MoviesService {
      * name and launch date
      */
     public MovieVO update(final Long id, final MovieVO movieVO) {
+        LOGGER.debug("Service update - pathId={}, payloadId={}", id, movieVO.getId());
         if (movieVO.getId() != null && !movieVO.getId().equals(id)) {
+            LOGGER.warn("Service update - id mismatch pathId={} payloadId={}", id, movieVO.getId());
             throw new ItemIdMismatchException(
                     "Path id " + id + " does not match request body id " + movieVO.getId());
         }
 
         // Ensure target entity exists before attempting update.
+        LOGGER.debug("Service update - verifying movie exists for id={}", id);
         moviesDAO.findById(id);
 
         try {
             MovieVO foundMovie = moviesDAO.findByNameAndLaunchDate(movieVO.getName(), movieVO.getLaunchDate());
             if (foundMovie.getId() != null && !foundMovie.getId().equals(id)) {
+                LOGGER.warn("Service update - duplicated movie detected for name='{}', launchDate='{}', existingId={}",
+                        movieVO.getName(), movieVO.getLaunchDate(), foundMovie.getId());
                 throw new DuplicatedItemException("Movie with name " + movieVO.getName()
                         + " and launch date " + movieVO.getLaunchDate() + " already exists with id "
                         + foundMovie.getId());
             }
         } catch (final ItemNotFoundException infe) {
             // No duplicate found by name and launch date, proceed with update.
+            LOGGER.debug("Service update - no duplicate found by name/date, proceeding with update");
         }
 
         movieVO.setId(id);
+        LOGGER.debug("Service update - persisting movie id={}", id);
         return moviesDAO.update(movieVO);
     }
 }

@@ -1,5 +1,8 @@
 package com.kikesoft.moviesapi.mapper;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.kikesoft.moviesapi.entity.MovieEntity;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
@@ -9,6 +12,8 @@ import com.kikesoft.moviesapi.vo.MovieVO;
  * @author Enrique Sanchez
  */
 public final class MovieMapper {
+    private static final Logger LOGGER = LogManager.getLogger(MovieMapper.class);
+
     /**
      * Utility class constructor.
      */
@@ -24,8 +29,11 @@ public final class MovieMapper {
      */
     public static MovieVO toVO(MovieEntity entity) {
         if (entity == null) {
+            LOGGER.debug("Mapper toVO - source entity is null");
             return null;
         }
+
+        LOGGER.debug("Mapper toVO - mapping entity id={}", entity.getId());
 
         return new MovieVO(
                 entity.getId(),
@@ -46,8 +54,11 @@ public final class MovieMapper {
      */
     public static MovieEntity toEntity(MovieVO movieVO) {
         if (movieVO == null) {
+            LOGGER.debug("Mapper toEntity - source movieVO is null");
             return null;
         }
+
+        LOGGER.debug("Mapper toEntity - mapping movieVO id={}", movieVO.getId());
 
         return new MovieEntity(
                 movieVO.getId(),
