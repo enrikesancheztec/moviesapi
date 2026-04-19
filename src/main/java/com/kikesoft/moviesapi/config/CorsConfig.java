@@ -39,11 +39,23 @@ public class CorsConfig implements WebMvcConfigurer {
                 .filter(origin -> !origin.isEmpty())
                 .toArray(String[]::new);
 
-        CorsRegistration corsRegistration = registry.addMapping("/movies/**")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With")
-                .exposedHeaders("Location")
-                .maxAge(3600);
+        configureMapping(registry, "/movies/**", origins);
+        configureMapping(registry, "/producers/**", origins);
+        }
+
+        /**
+         * Applies standard CORS configuration for an API mapping.
+         *
+         * @param registry MVC CORS registry
+         * @param mapping path pattern to configure
+         * @param origins allowed origins
+         */
+        private void configureMapping(CorsRegistry registry, String mapping, String[] origins) {
+        CorsRegistration corsRegistration = registry.addMapping(mapping)
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .allowedHeaders("Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With")
+            .exposedHeaders("Location")
+            .maxAge(3600);
 
         if (origins.length > 0) {
             corsRegistration.allowedOrigins(origins);
