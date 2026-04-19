@@ -1,14 +1,18 @@
 package com.kikesoft.moviesapi.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.domain.Persistable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
@@ -46,6 +50,12 @@ public class ProducerEntity implements Serializable, Persistable<Long> {
      */
     @Column(length = 1000)
     private String profile;
+
+    /**
+     * Movies associated with this producer. Loaded lazily; not exposed via the API.
+     */
+    @OneToMany(mappedBy = "producer", fetch = FetchType.LAZY)
+    private List<MovieEntity> movies = new ArrayList<>();
 
     /**
      * Entity new-state flag used by Spring Data persistence semantics.
