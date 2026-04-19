@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import com.kikesoft.moviesapi.entity.ProducerEntity;
+import com.kikesoft.moviesapi.repository.MovieRepository;
 import com.kikesoft.moviesapi.repository.ProducerRepository;
 
 @SpringBootTest
@@ -26,10 +27,14 @@ class ProducersControllerIntegrationTests {
     @Autowired
     private ProducerRepository producerRepository;
 
+    @Autowired
+    private MovieRepository movieRepository;
+
     private Long producerId;
 
     @BeforeEach
     void setUp() {
+        movieRepository.deleteAll();
         producerRepository.deleteAll();
         producerId = createProducer("John Smith", "Award-winning producer.").getId();
     }
