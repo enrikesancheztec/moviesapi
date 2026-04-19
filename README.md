@@ -36,8 +36,10 @@ src/test/java/
 Before running the project, make sure you have:
 
 - Java 17+
-- MySQL running locally (or reachable from your environment)
-- Local environment properties configured in `env.properties`
+- MySQL running locally (or reachable from your environment) for local app runtime
+- Local environment properties configured in `env.properties` for local app runtime
+
+For automated tests, MySQL is not required. Tests run with an in-memory H2 database using the `test` profile.
 
 ### env.properties required keys
 Create an `env.properties` file in the project root with at least these keys:
@@ -72,6 +74,12 @@ From the project root:
 ```bash
 ./mvnw test
 ```
+
+Notes for tests:
+
+- The test suite runs with profile `test`.
+- Test datasource is H2 in-memory (`src/test/resources/application-test.properties`).
+- `env.properties` is not required to run tests.
 
 - Package artifact
 
@@ -186,12 +194,15 @@ Notes for update:
 - If `id` is present in the payload, it must match the path id.
 
 ## Configuration Notes
-- The database connection depends on external values from `env.properties` (imported by `application.properties`).
+- Runtime database connection depends on external values from `env.properties` (imported by `application.properties`).
+- Test configuration is self-contained in `src/test/resources/application-test.properties` and uses H2 in-memory.
 - The `target/` folder contains build artifacts and must not be versioned.
 
 ## Troubleshooting
 - Application fails at startup with datasource errors:
   Verify `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` in `env.properties` and ensure MySQL is running.
+- Tests fail with datasource errors:
+  Verify tests are running with profile `test` and that `src/test/resources/application-test.properties` is present.
 - Swagger UI not available:
   Confirm the app is started and open `http://localhost:8080/swagger-ui.html`.
 - CORS issues from frontend clients:
