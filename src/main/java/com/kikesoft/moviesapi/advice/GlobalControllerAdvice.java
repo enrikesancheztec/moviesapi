@@ -36,6 +36,8 @@ public class GlobalControllerAdvice {
      */
     @ExceptionHandler(ItemNotFoundException.class)
     public ResponseEntity<Object> handleItemNotFound(final ItemNotFoundException infe) {
+        LOGGER.warn("Handled not-found exception: {}", infe.getMessage());
+
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", infe.getMessage());
@@ -51,6 +53,8 @@ public class GlobalControllerAdvice {
      */
     @ExceptionHandler(DuplicatedItemException.class)
     public ResponseEntity<Object> handleDuplicatedItem(final DuplicatedItemException die) {
+        LOGGER.warn("Handled duplicated-item exception: {}", die.getMessage());
+
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", die.getMessage());
@@ -66,6 +70,8 @@ public class GlobalControllerAdvice {
      */
     @ExceptionHandler(ItemIdMismatchException.class)
     public ResponseEntity<Object> handleItemIdMismatch(final ItemIdMismatchException iime) {
+        LOGGER.warn("Handled item-id-mismatch exception: {}", iime.getMessage());
+
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", iime.getMessage());
@@ -82,6 +88,8 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationExceptions(
             MethodArgumentNotValidException manve) {
+        LOGGER.warn("Handled validation exception with {} field errors", manve.getErrorCount());
+
         Map<String, String> errors = new HashMap<>();
         manve.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
