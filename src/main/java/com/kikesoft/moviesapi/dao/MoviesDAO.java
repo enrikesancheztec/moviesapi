@@ -70,19 +70,30 @@ public class MoviesDAO {
     }
 
     /**
-     * Persists a movie and returns the stored representation.
-     * This method supports both create and update operations.
+     * Persists a new movie and returns the stored representation.
      *
      * @param movieVO movie to persist
      * @return persisted movie or {@code null} when the input is {@code null}
      */
-    public MovieVO save(MovieVO movieVO) {
+    public MovieVO add(MovieVO movieVO) {
         MovieEntity movieEntity = MovieMapper.toEntity(movieVO);
         if (movieEntity == null) {
             return null;
         }
-        if (movieEntity.getId() == null) {
-            movieEntity.setNew(true);
+        movieEntity.setNew(true);
+        return MovieMapper.toVO(movieRepository.save(movieEntity));
+    }
+
+    /**
+     * Persists updates for an existing movie and returns the stored representation.
+     *
+     * @param movieVO movie to update
+     * @return updated movie or {@code null} when the input is {@code null}
+     */
+    public MovieVO update(MovieVO movieVO) {
+        MovieEntity movieEntity = MovieMapper.toEntity(movieVO);
+        if (movieEntity == null) {
+            return null;
         }
         return MovieMapper.toVO(movieRepository.save(movieEntity));
     }

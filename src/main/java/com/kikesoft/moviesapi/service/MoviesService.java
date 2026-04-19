@@ -59,7 +59,7 @@ public class MoviesService {
                     + " and launch date " + movieVO.getLaunchDate() + " already exists");
         } catch (final ItemNotFoundException infe) {
             // Movie not found, proceed with creation
-            return moviesDAO.save(movieVO);
+            return moviesDAO.add(movieVO);
         }
     }
 
@@ -96,6 +96,6 @@ public class MoviesService {
         }
 
         movieVO.setId(id);
-        return moviesDAO.save(movieVO);
+        return moviesDAO.update(movieVO);
     }
 }
