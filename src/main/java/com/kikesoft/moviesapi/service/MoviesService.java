@@ -30,7 +30,7 @@ public class MoviesService {
      * Finds a movie by id.
      *
      * @param id movie identifier
-     * @return optional movie representation
+        * @return movie representation
      */
     public MovieVO findById(Long id) {
         return moviesDAO.findById(id);
@@ -59,7 +59,7 @@ public class MoviesService {
                     + " and launch date " + movieVO.getLaunchDate() + " already exists");
         } catch (final ItemNotFoundException infe) {
             // Movie not found, proceed with creation
-            return moviesDAO.save(movieVO);
+            return moviesDAO.add(movieVO);
         }
     }
 
@@ -96,6 +96,6 @@ public class MoviesService {
         }
 
         movieVO.setId(id);
-        return moviesDAO.save(movieVO);
+        return moviesDAO.update(movieVO);
     }
 }

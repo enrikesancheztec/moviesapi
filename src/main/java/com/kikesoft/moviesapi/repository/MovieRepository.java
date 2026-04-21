@@ -20,7 +20,7 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
      *
      * @param name movie title
      * @param launchDate movie release date
-     * @return matching movie entity or {@code null} when no record matches
+     * @return optional containing the matching movie entity when found
      */
     Optional<MovieEntity> findByNameAndLaunchDate(String name, LocalDate launchDate);
 }

@@ -39,6 +39,19 @@ Before running the project, make sure you have:
 - MySQL running locally (or reachable from your environment)
 - Local environment properties configured in `env.properties`
 
+### env.properties required keys
+Create an `env.properties` file in the project root with at least these keys:
+
+```properties
+DB_URL=jdbc:mysql://localhost:3306/movies?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+DB_USERNAME=root
+DB_PASSWORD=changeme
+JPA_DDL_AUTO=update
+JPA_SHOW_SQL=true
+APP_CORS_ALLOWED_ORIGINS=http://localhost:3000
+APP_CORS_ALLOW_CREDENTIALS=true
+```
+
 ## Maven Commands (Daily Usage)
 From the project root:
 
@@ -175,3 +188,11 @@ Notes for update:
 ## Configuration Notes
 - The database connection depends on external values from `env.properties` (imported by `application.properties`).
 - The `target/` folder contains build artifacts and must not be versioned.
+
+## Troubleshooting
+- Application fails at startup with datasource errors:
+  Verify `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` in `env.properties` and ensure MySQL is running.
+- Swagger UI not available:
+  Confirm the app is started and open `http://localhost:8080/swagger-ui.html`.
+- CORS issues from frontend clients:
+  Set `APP_CORS_ALLOWED_ORIGINS` and `APP_CORS_ALLOW_CREDENTIALS` correctly in `env.properties`.
