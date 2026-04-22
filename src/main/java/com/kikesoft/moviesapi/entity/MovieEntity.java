@@ -11,9 +11,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.Table;
@@ -73,6 +76,13 @@ public class MovieEntity implements Serializable, Persistable<Long> {
     private String description;
 
     /**
+     * Producer responsible for this movie. Nullable for backward compatibility with existing records.
+     */
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "producer_id", nullable = true)
+    private ProducerEntity producer;
+
+    /**
      * Entity new-state flag used by Spring Data persistence semantics.
      * This field is not persisted to the database.
      */
@@ -104,6 +114,23 @@ public class MovieEntity implements Serializable, Persistable<Long> {
         this.duration = duration;
         this.rating = rating;
         this.description = description;
+    }
+
+    /**
+     * Creates a movie entity with all supported fields including producer.
+     *
+     * @param id movie identifier
+     * @param name movie title
+     * @param launchDate release date
+     * @param duration runtime in minutes
+     * @param rating age rating classification
+     * @param description short movie description
+     * @param producer producer responsible for this movie
+     */
+    public MovieEntity(Long id, String name, LocalDate launchDate, Integer duration, Rating rating, String description,
+            ProducerEntity producer) {
+        this(id, name, launchDate, duration, rating, description);
+        this.producer = producer;
     }
 
     /**
@@ -245,6 +272,24 @@ public class MovieEntity implements Serializable, Persistable<Long> {
      */
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * Returns the producer responsible for this movie.
+     *
+     * @return producer entity or {@code null} when not set
+     */
+    public ProducerEntity getProducer() {
+        return producer;
+    }
+
+    /**
+     * Sets the producer responsible for this movie.
+     *
+     * @param producer producer entity
+     */
+    public void setProducer(ProducerEntity producer) {
+        this.producer = producer;
     }
 
     /**

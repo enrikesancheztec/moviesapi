@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
+import com.kikesoft.moviesapi.exception.MissingRequiredFieldException;
 
 /**
  * Global exception handlers for MVC controllers.
@@ -75,6 +76,23 @@ public class GlobalControllerAdvice {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("message", iime.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /**
+     * Handles missing required field errors and returns HTTP 400 with a structured response body.
+     *
+     * @param mrfe source exception
+     * @return response entity with error payload
+     */
+    @ExceptionHandler(MissingRequiredFieldException.class)
+    public ResponseEntity<Object> handleMissingRequiredField(final MissingRequiredFieldException mrfe) {
+        LOGGER.warn("Handled missing-required-field exception: {}", mrfe.getMessage());
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("message", mrfe.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }

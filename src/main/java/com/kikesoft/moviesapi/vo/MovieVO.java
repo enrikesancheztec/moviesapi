@@ -28,6 +28,16 @@ public class MovieVO implements Serializable {
     private String description;
 
     /**
+     * Producer id sent by the client on POST and PUT requests.
+     */
+    private Long producerId;
+
+    /**
+     * Full producer data returned in responses. Not read from the request body.
+     */
+    private ProducerVO producer;
+
+    /**
      * Creates an empty movie value object.
      */
     public MovieVO() {
@@ -50,6 +60,25 @@ public class MovieVO implements Serializable {
         this.duration = duration;
         this.rating = rating;
         this.description = description;
+    }
+
+    /**
+     * Creates a movie value object with all fields including producer.
+     *
+     * @param id movie identifier
+     * @param name movie title
+     * @param launchDate release date
+     * @param duration runtime in minutes
+     * @param rating age rating classification
+     * @param description short movie description
+     * @param producerId producer identifier sent on input
+     * @param producer full producer data returned on output
+     */
+    public MovieVO(Long id, String name, LocalDate launchDate, Integer duration, Rating rating, String description,
+            Long producerId, ProducerVO producer) {
+        this(id, name, launchDate, duration, rating, description);
+        this.producerId = producerId;
+        this.producer = producer;
     }
 
     /**
@@ -158,6 +187,42 @@ public class MovieVO implements Serializable {
      */
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * Returns the producer identifier sent by the client.
+     *
+     * @return producer id
+     */
+    public Long getProducerId() {
+        return producerId;
+    }
+
+    /**
+     * Sets the producer identifier.
+     *
+     * @param producerId producer id
+     */
+    public void setProducerId(Long producerId) {
+        this.producerId = producerId;
+    }
+
+    /**
+     * Returns the full producer data included in responses.
+     *
+     * @return producer value object or {@code null} when not set
+     */
+    public ProducerVO getProducer() {
+        return producer;
+    }
+
+    /**
+     * Sets the full producer data for responses.
+     *
+     * @param producer producer value object
+     */
+    public void setProducer(ProducerVO producer) {
+        this.producer = producer;
     }
 
     /**

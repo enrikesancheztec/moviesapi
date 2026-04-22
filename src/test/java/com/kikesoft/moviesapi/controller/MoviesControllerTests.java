@@ -19,6 +19,7 @@ import com.kikesoft.moviesapi.enumeration.Rating;
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
+import com.kikesoft.moviesapi.exception.MissingRequiredFieldException;
 import com.kikesoft.moviesapi.service.MoviesService;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
@@ -81,16 +82,17 @@ class MoviesControllerTests {
 
     @Test
     void addNewMovie_withoutId_returnsCreated() throws Exception {
-        when(moviesService.add(argThat(movie -> movie != null && movie.getId() == null))).thenReturn(
-                new MovieVO(
-                        3L,
-                        "Inception",
-                        LocalDate.of(2010, 7, 16),
-                        148,
-                        Rating.PG_13,
-                        "A thief enters dreams to steal corporate secrets."
-                )
-        );
+        when(moviesService.add(argThat(movie -> movie != null && movie.getId() == null))).thenAnswer(invocation -> {
+            MovieVO response = new MovieVO(
+                    3L,
+                    "Inception",
+                    LocalDate.of(2010, 7, 16),
+                    148,
+                    Rating.PG_13,
+                    "A thief enters dreams to steal corporate secrets.");
+            response.setProducerId(10L);
+            return response;
+        });
 
         mockMvc.perform(post("/movies")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -100,12 +102,14 @@ class MoviesControllerTests {
                                   "launchDate": "2010-07-16",
                                   "duration": 148,
                                   "rating": "PG_13",
-                                  "description": "A thief enters dreams to steal corporate secrets."
+                                  "description": "A thief enters dreams to steal corporate secrets.",
+                                  "producerId": 10
                                 }
                                 """))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isCreated())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.id").value(3))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.name").value("Inception"));
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.name").value("Inception"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.producerId").value(10));
     }
 
     @Test
@@ -192,12 +196,34 @@ class MoviesControllerTests {
                                   "launchDate": "2010-07-16",
                                   "duration": 148,
                                   "rating": "PG_13",
-                                  "description": "A thief enters dreams to steal corporate secrets."
+                                  "description": "A thief enters dreams to steal corporate secrets.",
+                                  "producerId": 10
                                 }
                                 """))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message")
                         .value("Movie with name Inception and launch date 2010-07-16 already exists"));
+    }
+
+    @Test
+    void addNewMovie_whenProducerIdIsMissing_returnsBadRequest() throws Exception {
+        when(moviesService.add(argThat(movie -> movie != null && movie.getProducerId() == null)))
+                .thenThrow(new MissingRequiredFieldException("producerId is required when creating a movie"));
+
+        mockMvc.perform(post("/movies")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Inception",
+                                  "launchDate": "2010-07-16",
+                                  "duration": 148,
+                                  "rating": "PG_13",
+                                  "description": "A thief enters dreams to steal corporate secrets."
+                                }
+                                """))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.message")
+                        .value("producerId is required when creating a movie"));
     }
 
     @Test

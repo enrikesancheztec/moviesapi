@@ -11,6 +11,7 @@ import com.kikesoft.moviesapi.dao.MoviesDAO;
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
+import com.kikesoft.moviesapi.exception.MissingRequiredFieldException;
 import com.kikesoft.moviesapi.vo.MovieVO;
 
 /**
@@ -21,6 +22,7 @@ import com.kikesoft.moviesapi.vo.MovieVO;
  */
 @Service
 public class MoviesService {
+
     private static final Logger LOGGER = LogManager.getLogger(MoviesService.class);
 
     /**
@@ -33,7 +35,7 @@ public class MoviesService {
      * Finds a movie by id.
      *
      * @param id movie identifier
-        * @return movie representation
+     * @return movie representation
      */
     public MovieVO findById(Long id) {
         LOGGER.debug("Service findById - id={}", id);
@@ -56,8 +58,15 @@ public class MoviesService {
      * @param movieVO movie payload to persist
      * @return persisted movie representation or {@code null} when the input is
      * {@code null}
+     * @throws MissingRequiredFieldException when {@code producerId} is missing
+     * for movie creation
      */
     public MovieVO add(MovieVO movieVO) {
+        if (movieVO.getProducerId() == null) {
+            LOGGER.warn("Service add - missing required producerId for movie name='{}'", movieVO.getName());
+            throw new MissingRequiredFieldException("producerId is required when creating a movie");
+        }
+
         LOGGER.debug("Service add - validating movie with name='{}' and launchDate='{}'",
                 movieVO.getName(), movieVO.getLaunchDate());
         try {
