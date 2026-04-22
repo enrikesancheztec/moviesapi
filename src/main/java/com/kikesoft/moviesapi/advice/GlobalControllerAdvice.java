@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -23,6 +25,8 @@ import com.kikesoft.moviesapi.exception.ItemNotFoundException;
  */
 @ControllerAdvice
 public class GlobalControllerAdvice {
+    private static final Logger LOGGER = LogManager.getLogger(GlobalControllerAdvice.class);
+
 
     /**
      * Handles not-found errors and returns HTTP 404 with a structured response body.
@@ -86,5 +90,22 @@ public class GlobalControllerAdvice {
         });
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    /**
+     * Handles unexpected errors and returns HTTP 500 with a structured response body.
+     *
+     * @param ex source exception
+     * @return response entity with generic error payload
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleUnexpectedException(final Exception e) {
+        LOGGER.error("Unhandled exception processing request", e);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("message", "Internal server error");
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }

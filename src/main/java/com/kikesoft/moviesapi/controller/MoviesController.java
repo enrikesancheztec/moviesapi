@@ -2,6 +2,8 @@ package com.kikesoft.moviesapi.controller;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +37,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/movies")
 @Tag(name = "Movies", description = "Operations to retrieve, create and update movies")
 class MoviesController {
+    private static final Logger LOGGER = LogManager.getLogger(MoviesController.class);
+
     @Autowired
     MoviesService moviesService;
 
@@ -51,7 +55,9 @@ class MoviesController {
             @ApiResponse(responseCode = "404", description = "Movie not found", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"timestamp\":\"2026-04-19T10:00:00\",\"message\":\"Movie with id 99 not found\"}")))
         })
     ResponseEntity<MovieVO> getById(@PathVariable Long id) {
+            LOGGER.debug("GET /movies/{} - fetching movie by id", id);
             MovieVO movie = moviesService.findById(id);
+            LOGGER.debug("GET /movies/{} - movie found", id);
             return ResponseEntity.ok(movie);
     }
 
@@ -64,7 +70,10 @@ class MoviesController {
     @Operation(summary = "Get all movies", description = "Returns all movies currently stored")
     @ApiResponse(responseCode = "200", description = "Movies retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MovieVO.class))))
     ResponseEntity<List<MovieVO>> getAll() {
-        return ResponseEntity.ok(moviesService.findAll());
+        LOGGER.debug("GET /movies - fetching all movies");
+        List<MovieVO> movies = moviesService.findAll();
+        LOGGER.debug("GET /movies - retrieved {} movies", movies.size());
+        return ResponseEntity.ok(movies);
     }
 
     /**
@@ -81,10 +90,14 @@ class MoviesController {
             @ApiResponse(responseCode = "409", description = "Movie already exists", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"timestamp\":\"2026-04-19T10:00:00\",\"message\":\"Movie with name Inception and launch date 2010-07-16 already exists\"}")))
     })
     ResponseEntity<MovieVO> addNew(@Valid @RequestBody MovieVO movieVO) {
+        LOGGER.debug("POST /movies - creating movie with name '{}' and launchDate '{}'", movieVO.getName(),
+                movieVO.getLaunchDate());
         MovieVO savedMovie = moviesService.add(movieVO);
         if (savedMovie == null) {
+            LOGGER.warn("POST /movies - request returned null saved movie");
             return ResponseEntity.badRequest().build();
         }
+        LOGGER.debug("POST /movies - movie created with id {}", savedMovie.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(savedMovie);
     }
 
@@ -104,10 +117,13 @@ class MoviesController {
             @ApiResponse(responseCode = "409", description = "Movie duplicated by name and launch date", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"timestamp\":\"2026-04-19T10:00:00\",\"message\":\"Movie with name Inception and launch date 2010-07-16 already exists with id 7\"}")))
     })
     ResponseEntity<MovieVO> update(@PathVariable Long id, @Valid @RequestBody MovieVO movieVO) {
+        LOGGER.debug("PUT /movies/{} - updating movie with payload id {}", id, movieVO.getId());
         MovieVO updatedMovie = moviesService.update(id, movieVO);
         if (updatedMovie == null) {
+            LOGGER.warn("PUT /movies/{} - request returned null updated movie", id);
             return ResponseEntity.badRequest().build();
         }
+        LOGGER.debug("PUT /movies/{} - movie updated successfully", id);
         return ResponseEntity.ok(updatedMovie);
     }
 }
