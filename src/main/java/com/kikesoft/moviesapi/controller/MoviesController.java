@@ -57,7 +57,7 @@ class MoviesController {
     ResponseEntity<MovieVO> getById(@PathVariable Long id) {
             LOGGER.debug("GET /movies/{} - fetching movie by id", id);
             MovieVO movie = moviesService.findById(id);
-            LOGGER.debug("GET /movies/{} - movie found", id);
+            LOGGER.debug("GET /movies/{} - movie found: {}", id, movie);
             return ResponseEntity.ok(movie);
     }
 
@@ -72,7 +72,7 @@ class MoviesController {
     ResponseEntity<List<MovieVO>> getAll() {
         LOGGER.debug("GET /movies - fetching all movies");
         List<MovieVO> movies = moviesService.findAll();
-        LOGGER.debug("GET /movies - retrieved {} movies", movies.size());
+        LOGGER.debug("GET /movies - retrieved {} movies: {}", movies.size(), movies);
         return ResponseEntity.ok(movies);
     }
 
@@ -97,7 +97,7 @@ class MoviesController {
             LOGGER.warn("POST /movies - request returned null saved movie");
             return ResponseEntity.badRequest().build();
         }
-        LOGGER.debug("POST /movies - movie created with id {}", savedMovie.getId());
+        LOGGER.debug("POST /movies - movie created with id {}: {}", savedMovie.getId(), savedMovie);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedMovie);
     }
 
@@ -123,7 +123,7 @@ class MoviesController {
             LOGGER.warn("PUT /movies/{} - request returned null updated movie", id);
             return ResponseEntity.badRequest().build();
         }
-        LOGGER.debug("PUT /movies/{} - movie updated successfully", id);
+        LOGGER.debug("PUT /movies/{} - movie updated successfully: {}", id, updatedMovie);
         return ResponseEntity.ok(updatedMovie);
     }
 }
