@@ -154,7 +154,7 @@ Base URL:
 http://localhost:8080
 ```
 
-Available endpoints:
+### Movies
 
 | Method | Path | Description | Success Response |
 | --- | --- | --- | --- |
@@ -210,6 +210,61 @@ Update endpoint error responses:
 Notes for update:
 
 - The resource id is taken from the path (`/movies/{id}`).
+- If `id` is present in the payload, it must match the path id.
+
+### Producers
+
+| Method | Path | Description | Success Response |
+| --- | --- | --- | --- |
+| GET | `/producers` | Returns all producers. | `200 OK` with a JSON array of producers. |
+| GET | `/producers/{id}` | Returns one producer by id. | `200 OK` with a producer JSON object, or `404 Not Found` when missing. |
+| POST | `/producers` | Creates a new producer. | `201 Created` with the saved producer JSON object. |
+| PUT | `/producers/{id}` | Updates an existing producer by id. | `200 OK` with the updated producer JSON object. |
+
+Producer JSON fields:
+
+```text
+id, name, profile
+```
+
+- `name` is mandatory.
+- `profile` is optional.
+
+Example POST payload:
+
+```json
+{
+  "name": "John Smith",
+  "profile": "Award-winning producer with 20 years of experience."
+}
+```
+
+Example update request:
+
+```text
+PUT /producers/3
+```
+
+Example PUT payload:
+
+```json
+{
+  "id": 3,
+  "name": "John Smith",
+  "profile": "Updated producer profile."
+}
+```
+
+Update endpoint error responses:
+
+- `400 Bad Request` when payload validation fails.
+- `400 Bad Request` when path id and payload id do not match.
+- `404 Not Found` when the target producer id does not exist.
+- `409 Conflict` when another producer already has the same `name`.
+
+Notes for update:
+
+- The resource id is taken from the path (`/producers/{id}`).
 - If `id` is present in the payload, it must match the path id.
 
 ## Configuration Notes
