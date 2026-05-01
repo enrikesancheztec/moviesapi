@@ -53,6 +53,20 @@ public class MoviesService {
     }
 
     /**
+     * Retrieves all movies associated with a producer.
+     *
+     * @param producerId producer identifier
+     * @return list of movies for the producer
+     * @throws ItemNotFoundException when producer does not exist
+     */
+    public List<MovieVO> findByProducerId(Long producerId) {
+        LOGGER.debug("Service findByProducerId - fetching movies for producerId={}", producerId);
+        List<MovieVO> movies = moviesDAO.findByProducerId(producerId);
+        LOGGER.debug("Service findByProducerId - retrieved {} movies", movies.size());
+        return movies;
+    }
+
+    /**
      * Adds a new movie to the persistence layer.
      *
      * @param movieVO movie payload to persist
