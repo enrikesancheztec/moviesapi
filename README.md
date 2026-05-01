@@ -294,6 +294,66 @@ Notes for update:
 - The resource id is taken from the path (`/producers/{id}`).
 - If `id` is present in the payload, it must match the path id.
 
+### Users
+
+| Method | Path | Description | Success Response |
+| --- | --- | --- | --- |
+| GET | `/users` | Returns all users. | `200 OK` with a JSON array of users (password is never included). |
+| GET | `/users/{id}` | Returns one user by id. | `200 OK` with a user JSON object (password is never included), or `404 Not Found` when missing. |
+| POST | `/users` | Creates a new user. | `201 Created` with the saved user JSON object (password is never included). |
+
+User JSON fields:
+
+```text
+id, username, password (request only)
+```
+
+- `username` is mandatory and must be unique.
+- `password` is mandatory on `POST /users`.
+- `password` is **never** returned in any API response (always `null` or omitted).
+
+Example POST payload:
+
+```json
+{
+  "username": "alice",
+  "password": "secret123"
+}
+```
+
+Example POST response payload:
+
+```json
+{
+  "id": 1,
+  "username": "alice",
+  "password": null
+}
+```
+
+Example GET `/users` response:
+
+```json
+[
+  {
+    "id": 1,
+    "username": "alice",
+    "password": null
+  },
+  {
+    "id": 2,
+    "username": "bob",
+    "password": null
+  }
+]
+```
+
+POST endpoint error responses:
+
+- `400 Bad Request` when `username` is blank.
+- `400 Bad Request` when `password` is blank.
+- `409 Conflict` when another user already has the same `username`.
+
 ## Configuration Notes
 - Runtime database connection depends on external values from `env.properties` (imported by `application.properties`).
 - Runtime log levels can be configured in `env.properties` (recommended: `root=INFO`, `com.kikesoft.moviesapi=DEBUG`).
