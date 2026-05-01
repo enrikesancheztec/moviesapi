@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kikesoft.moviesapi.service.MoviesService;
@@ -67,12 +68,22 @@ class MoviesController {
      * @return list of movies
      */
     @GetMapping
-    @Operation(summary = "Get all movies", description = "Returns all movies currently stored")
+    @Operation(summary = "Get all movies", description = "Returns all movies currently stored or filtered by producerId if provided")
     @ApiResponse(responseCode = "200", description = "Movies retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MovieVO.class))))
-    ResponseEntity<List<MovieVO>> getAll() {
-        LOGGER.debug("GET /movies - fetching all movies");
-        List<MovieVO> movies = moviesService.findAll();
-        LOGGER.debug("GET /movies - retrieved {} movies: {}", movies.size(), movies);
+    ResponseEntity<List<MovieVO>> getAll(
+            @RequestParam(value = "producerId", required = false) final Long producerId) {
+        List<MovieVO> movies;
+        
+        if (producerId != null) {
+            LOGGER.debug("GET /movies?producerId={} - fetching movies for producer", producerId);
+            movies = moviesService.findByProducerId(producerId);
+            LOGGER.debug("GET /movies?producerId={} - retrieved {} movies", producerId, movies.size());
+        } else {
+            LOGGER.debug("GET /movies - fetching all movies");
+            movies = moviesService.findAll();
+            LOGGER.debug("GET /movies - retrieved {} movies: {}", movies.size(), movies);
+        }
+        
         return ResponseEntity.ok(movies);
     }
 
