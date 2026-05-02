@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kikesoft.moviesapi.service.MoviesService;
 import com.kikesoft.moviesapi.service.ProducersService;
+import com.kikesoft.moviesapi.vo.MovieVO;
 import com.kikesoft.moviesapi.vo.ProducerVO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +43,9 @@ class ProducersController {
 
     @Autowired
     ProducersService producersService;
+
+    @Autowired
+    MoviesService moviesService;
 
     /**
      * Retrieves a producer by id.
@@ -74,6 +79,25 @@ class ProducersController {
         List<ProducerVO> producers = producersService.findAll();
         LOGGER.debug("GET /producers - retrieved {} producers: {}", producers.size(), producers);
         return ResponseEntity.ok(producers);
+    }
+
+    /**
+     * Retrieves all movies associated with a producer.
+     *
+     * @param id producer identifier
+     * @return list of movies for the producer
+     */
+    @GetMapping("/{id}/movies")
+    @Operation(summary = "Get movies by producer id", description = "Returns all movies associated with a specific producer")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Movies retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MovieVO.class)))),
+        @ApiResponse(responseCode = "404", description = "Producer not found", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"timestamp\":\"2026-05-01T10:00:00\",\"message\":\"Producer with id 99 not found\"}")))
+    })
+    ResponseEntity<List<MovieVO>> getMoviesByProducerId(@PathVariable Long id) {
+        LOGGER.debug("GET /producers/{}/movies - fetching movies for producer", id);
+        List<MovieVO> movies = moviesService.findByProducerId(id);
+        LOGGER.debug("GET /producers/{}/movies - retrieved {} movies", id, movies.size());
+        return ResponseEntity.ok(movies);
     }
 
     /**

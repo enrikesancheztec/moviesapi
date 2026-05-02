@@ -349,4 +349,29 @@ class MoviesServiceTests {
         assertEquals(updatedMovie, result);
         verify(moviesDAO).update(argThat(movie -> movie != null && Long.valueOf(3L).equals(movie.getId())));
     }
+
+    @Test
+    void findByProducerId_delegatesToDAOAndReturnsMovies() {
+        MovieVO movie1 = new MovieVO(1L, "Inception", LocalDate.of(2010, 7, 16), 148, Rating.PG_13, "Thriller", 10L, null);
+        MovieVO movie2 = new MovieVO(2L, "The Dark Knight", LocalDate.of(2008, 7, 18), 152, Rating.PG_13, "Action", 10L, null);
+
+        when(moviesDAO.findByProducerId(10L)).thenReturn(List.of(movie1, movie2));
+
+        List<MovieVO> result = moviesService.findByProducerId(10L);
+
+        assertEquals(2, result.size());
+        assertEquals("Inception", result.get(0).getName());
+        assertEquals("The Dark Knight", result.get(1).getName());
+        verify(moviesDAO).findByProducerId(10L);
+    }
+
+    @Test
+    void findByProducerId_whenProducerNotFound_propagatesException() {
+        when(moviesDAO.findByProducerId(99L)).thenThrow(new ItemNotFoundException("Producer with id 99 not found"));
+
+        ItemNotFoundException exception = assertThrows(ItemNotFoundException.class, () -> moviesService.findByProducerId(99L));
+
+        assertEquals("Producer with id 99 not found", exception.getMessage());
+        verify(moviesDAO).findByProducerId(99L);
+    }
 }

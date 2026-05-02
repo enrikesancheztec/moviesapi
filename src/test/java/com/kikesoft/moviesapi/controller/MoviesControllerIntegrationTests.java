@@ -160,6 +160,43 @@ class MoviesControllerIntegrationTests {
                         .value("Path id " + movieId + " does not match request body id " + mismatchedId));
     }
 
+    @Test
+    void getAllMovies_withoutProducerIdParam_returnsAllMovies() throws Exception {
+        mockMvc.perform(get("/movies"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(1))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].id").value(movieId))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].name")
+                        .value("Star Wars: Episode IV - A New Hope"));
+    }
+
+    @Test
+    void getAllMovies_withValidProducerIdParam_returnsFilteredMovies() throws Exception {
+        mockMvc.perform(get("/movies?producerId={producerId}", producerId))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(1))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].id").value(movieId))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].producerId").value(producerId));
+    }
+
+    @Test
+    void getAllMovies_withInvalidProducerIdParam_returnsNotFound() throws Exception {
+        mockMvc.perform(get("/movies?producerId=999999"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void getAllMovies_withValidProducerIdButNoMovies_returnsEmptyArray() throws Exception {
+        ProducerEntity producerWithoutMovies = createProducer("Jane Doe", "Independent producer.");
+
+        mockMvc.perform(get("/movies?producerId={producerId}", producerWithoutMovies.getId()))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isEmpty());
+    }
+
         private MovieEntity createMovieOne(ProducerEntity producer) {
         MovieEntity movie = new MovieEntity(
                 null,

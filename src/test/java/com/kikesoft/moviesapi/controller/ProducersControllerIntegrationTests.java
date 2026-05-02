@@ -1,5 +1,7 @@
 package com.kikesoft.moviesapi.controller;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +14,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
+import com.kikesoft.moviesapi.entity.MovieEntity;
 import com.kikesoft.moviesapi.entity.ProducerEntity;
+import com.kikesoft.moviesapi.enumeration.Rating;
 import com.kikesoft.moviesapi.repository.MovieRepository;
 import com.kikesoft.moviesapi.repository.ProducerRepository;
 
@@ -36,7 +40,9 @@ class ProducersControllerIntegrationTests {
     void setUp() {
         movieRepository.deleteAll();
         producerRepository.deleteAll();
-        producerId = createProducer("John Smith", "Award-winning producer.").getId();
+        ProducerEntity producer = createProducer("John Smith", "Award-winning producer.");
+        producerId = producer.getId();
+        createMovieForProducer(producer);
     }
 
     @Test
@@ -142,9 +148,48 @@ class ProducersControllerIntegrationTests {
                         .value("Producer with name John Smith already exists with id " + producerId));
     }
 
+    @Test
+    void getMoviesByProducerId_returnsList() throws Exception {
+        mockMvc.perform(get("/producers/{id}/movies", producerId))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].id").isNumber())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].name").value("Star Wars: Episode IV - A New Hope"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$[0].producerId").value(producerId));
+    }
+
+    @Test
+    void getMoviesByProducerId_whenProducerNotFound_returnsNotFound() throws Exception {
+        mockMvc.perform(get("/producers/{id}/movies", 999999L))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void getMoviesByProducerId_whenProducerHasNoMovies_returnsEmptyArray() throws Exception {
+        ProducerEntity producerWithoutMovies = createProducer("Jane Doe", "Independent producer.");
+
+        mockMvc.perform(get("/producers/{id}/movies", producerWithoutMovies.getId()))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isEmpty());
+    }
+
     private ProducerEntity createProducer(String name, String profile) {
         ProducerEntity producer = new ProducerEntity(null, name, profile);
         producer.setNew(true);
         return producerRepository.save(producer);
+    }
+
+    private MovieEntity createMovieForProducer(ProducerEntity producer) {
+        MovieEntity movie = new MovieEntity(
+                null,
+                "Star Wars: Episode IV - A New Hope",
+                LocalDate.of(1977, 5, 25),
+                121,
+                Rating.PG,
+                "Luke Skywalker begins his journey as a Jedi Knight...");
+        movie.setProducer(producer);
+        movie.setNew(true);
+        return movieRepository.save(movie);
     }
 }
