@@ -57,7 +57,7 @@ class AuthController {
             @ApiResponse(responseCode = "200", description = "Login successful, token generated", content = @Content(mediaType = "text/plain", examples = @ExampleObject(value = "eyJhbGciOiJIUzI1NiJ9..."))),
             @ApiResponse(responseCode = "401", description = "Invalid credentials", content = @Content(mediaType = "text/plain", examples = @ExampleObject(value = "Invalid credentials")))
     })
-    ResponseEntity<String> login(@Valid @RequestBody CredentialsVO credentials) {
+    ResponseEntity<String> login(@Valid @RequestBody final CredentialsVO credentials) {
         LOGGER.debug("POST /auth/login - authenticating username='{}'", credentials.getUsername());
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
