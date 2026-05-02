@@ -386,6 +386,8 @@ Example login response:
 eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZSIsImlhdCI6MTcxNDU5MDAwMCwiZXhwIjoxNzE0NTkzNjAwfQ.mocksignature
 ```
 
+You can validate and inspect the generated JWT at https://www.jwt.io/.
+
 Login endpoint error responses:
 
 - `400 Bad Request` when request validation fails (blank username/password).
