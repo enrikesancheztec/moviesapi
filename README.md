@@ -54,6 +54,7 @@ APP_CORS_ALLOWED_ORIGINS=http://localhost:3000
 APP_CORS_ALLOW_CREDENTIALS=true
 logging.level.root=INFO
 logging.level.com.kikesoft.moviesapi=DEBUG
+jwt.tools.key=change-this-to-a-strong-secret-key
 ```
 
 ## Logging Configuration (Development)
@@ -354,9 +355,46 @@ POST endpoint error responses:
 - `400 Bad Request` when `password` is blank.
 - `409 Conflict` when another user already has the same `username`.
 
+### Auth
+
+| Method | Path | Description | Success Response |
+| --- | --- | --- | --- |
+| POST | `/auth/login` | Authenticates username and password, then generates a JWT. | `200 OK` with JWT as plain text. |
+
+Login request JSON fields:
+
+```text
+username, password
+```
+
+- `username` is mandatory.
+- `password` is mandatory.
+- Response body is the raw JWT string (not wrapped in JSON).
+
+Example login request:
+
+```json
+{
+  "username": "alice",
+  "password": "secret123"
+}
+```
+
+Example login response:
+
+```text
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZSIsImlhdCI6MTcxNDU5MDAwMCwiZXhwIjoxNzE0NTkzNjAwfQ.mocksignature
+```
+
+Login endpoint error responses:
+
+- `400 Bad Request` when request validation fails (blank username/password).
+- `401 Unauthorized` when credentials are invalid.
+
 ## Configuration Notes
 - Runtime database connection depends on external values from `env.properties` (imported by `application.properties`).
 - Runtime log levels can be configured in `env.properties` (recommended: `root=INFO`, `com.kikesoft.moviesapi=DEBUG`).
+- JWT signing key is configured with `jwt.tools.key` in `env.properties`.
 - Test configuration is self-contained in `src/test/resources/application-test.properties` and uses H2 in-memory.
 - The `target/` folder contains build artifacts and must not be versioned.
 
