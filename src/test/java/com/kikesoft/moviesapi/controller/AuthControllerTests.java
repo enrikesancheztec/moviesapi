@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.kikesoft.moviesapi.service.JwtTools;
+import com.kikesoft.moviesapi.security.JwtTools;
 
 @WebMvcTest(AuthController.class)
 class AuthControllerTests {

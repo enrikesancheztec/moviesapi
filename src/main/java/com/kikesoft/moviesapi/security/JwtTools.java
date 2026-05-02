@@ -1,4 +1,4 @@
-package com.kikesoft.moviesapi.service;
+package com.kikesoft.moviesapi.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
