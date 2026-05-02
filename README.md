@@ -241,6 +241,20 @@ Notes for update:
 - The resource id is taken from the path (`/movies/{id}`).
 - If `id` is present in the payload, it must match the path id.
 
+### Querying Movies by Producer
+Both query parameter and nested resource approaches return the same data:
+
+```bash
+# Using query parameter
+GET /movies?producerId=10
+
+# Using nested resource
+GET /producers/10/movies
+```
+
+Both endpoints return a JSON array of movies for the specified producer. If the producer doesn't exist, both return `404 Not Found`.
+
+
 ### Producers
 
 | Method | Path | Description | Success Response |
@@ -396,18 +410,6 @@ Login endpoint error responses:
 - `401 Unauthorized` when credentials are invalid.
 
 ## Configuration Notes
-### Querying Movies by Producer
-Both query parameter and nested resource approaches return the same data:
-
-```bash
-# Using query parameter
-GET /movies?producerId=10
-
-# Using nested resource
-GET /producers/10/movies
-```
-
-Both endpoints return a JSON array of movies for the specified producer. If the producer doesn't exist, both return `404 Not Found`.
 - Runtime database connection depends on external values from `env.properties` (imported by `application.properties`).
 - Runtime log levels can be configured in `env.properties` (recommended: `root=INFO`, `com.kikesoft.moviesapi=DEBUG`).
 - JWT signing key is configured with `jwt.tools.key` in `env.properties`.
