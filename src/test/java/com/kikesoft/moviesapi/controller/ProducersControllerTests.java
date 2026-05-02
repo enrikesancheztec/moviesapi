@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemIdMismatchException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
+import com.kikesoft.moviesapi.service.MoviesService;
 import com.kikesoft.moviesapi.service.ProducersService;
 import com.kikesoft.moviesapi.vo.ProducerVO;
 
@@ -27,6 +28,9 @@ class ProducersControllerTests {
 
     @MockitoBean
     private ProducersService producersService;
+
+    @MockitoBean
+    private MoviesService moviesService;
 
     @Test
     void getProducerById_returnsExpectedProducer() throws Exception {

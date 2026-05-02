@@ -160,6 +160,7 @@ http://localhost:8080
 | Method | Path | Description | Success Response |
 | --- | --- | --- | --- |
 | GET | `/movies` | Returns all movies. | `200 OK` with a JSON array of movies. |
+| GET | `/movies?producerId={id}` | Returns movies filtered by producer id. | `200 OK` with a JSON array of movies, or `404 Not Found` when producer doesn't exist. |
 | GET | `/movies/{id}` | Returns one movie by id. | `200 OK` with a movie JSON object, or `404 Not Found` when missing. |
 | POST | `/movies` | Creates a new movie. | `201 Created` with the saved movie JSON object, or `400 Bad Request` for invalid payload. |
 | PUT | `/movies/{id}` | Updates an existing movie by id. | `200 OK` with the updated movie JSON object. |
@@ -246,6 +247,7 @@ Notes for update:
 | --- | --- | --- | --- |
 | GET | `/producers` | Returns all producers. | `200 OK` with a JSON array of producers. |
 | GET | `/producers/{id}` | Returns one producer by id. | `200 OK` with a producer JSON object, or `404 Not Found` when missing. |
+| GET | `/producers/{id}/movies` | Returns all movies for a producer. | `200 OK` with a JSON array of movies, or `404 Not Found` when producer doesn't exist. |
 | POST | `/producers` | Creates a new producer. | `201 Created` with the saved producer JSON object. |
 | PUT | `/producers/{id}` | Updates an existing producer by id. | `200 OK` with the updated producer JSON object. |
 
@@ -295,6 +297,7 @@ Notes for update:
 - The resource id is taken from the path (`/producers/{id}`).
 - If `id` is present in the payload, it must match the path id.
 
+<<<<<<< HEAD
 ### Users
 
 | Method | Path | Description | Success Response |
@@ -394,6 +397,20 @@ Login endpoint error responses:
 - `401 Unauthorized` when credentials are invalid.
 
 ## Configuration Notes
+=======
+### Querying Movies by Producer
+Both query parameter and nested resource approaches return the same data:
+
+```bash
+# Using query parameter
+GET /movies?producerId=10
+
+# Using nested resource
+GET /producers/10/movies
+```
+
+Both endpoints return a JSON array of movies for the specified producer. If the producer doesn't exist, both return `404 Not Found`.
+>>>>>>> issue-39
 - Runtime database connection depends on external values from `env.properties` (imported by `application.properties`).
 - Runtime log levels can be configured in `env.properties` (recommended: `root=INFO`, `com.kikesoft.moviesapi=DEBUG`).
 - JWT signing key is configured with `jwt.tools.key` in `env.properties`.

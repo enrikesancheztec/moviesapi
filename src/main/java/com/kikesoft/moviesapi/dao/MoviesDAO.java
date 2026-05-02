@@ -12,9 +12,11 @@ import org.springframework.stereotype.Repository;
 import com.kikesoft.moviesapi.entity.MovieEntity;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
 import com.kikesoft.moviesapi.mapper.MovieMapper;
+import com.kikesoft.moviesapi.mapper.ProducerMapper;
 import com.kikesoft.moviesapi.repository.MovieRepository;
 import com.kikesoft.moviesapi.repository.ProducerRepository;
 import com.kikesoft.moviesapi.vo.MovieVO;
+import com.kikesoft.moviesapi.vo.ProducerVO;
 
 /**
  * Data access component that coordinates movie persistence operations.
@@ -90,6 +92,34 @@ public class MoviesDAO {
 
         LOGGER.debug("DAO findByNameAndLaunchDate - movie found for name='{}', launchDate='{}'", name, launchDate);
         return MovieMapper.toVO(movieEntity.get());
+    }
+
+    /**
+     * Retrieves all movies associated with a producer.
+     *
+     * @param producerId producer identifier
+     * @return list of movies mapped to VO
+     * @throws ItemNotFoundException when producer does not exist
+     */
+    public List<MovieVO> findByProducerId(Long producerId) {
+        LOGGER.debug("DAO findByProducerId - fetching movies for producerId={}", producerId);
+        
+        // Verify producer exists
+        ProducerVO producer = producerRepository.findById(producerId)
+            .map(ProducerMapper::toVO)
+            .orElseThrow(() -> {
+                LOGGER.warn("DAO findByProducerId - producer not found with id={}", producerId);
+                return new ItemNotFoundException("Producer with id " + producerId + " not found");
+            });
+        
+        // Fetch movies for this producer
+        List<MovieVO> movies = movieRepository.findByProducerId(producerId)
+            .stream()
+            .map(MovieMapper::toVO)
+            .toList();
+        
+        LOGGER.debug("DAO findByProducerId - retrieved {} movies for producerId={}", movies.size(), producerId);
+        return movies;
     }
 
     /**
