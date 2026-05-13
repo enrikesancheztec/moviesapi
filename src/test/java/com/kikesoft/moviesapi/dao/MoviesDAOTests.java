@@ -354,6 +354,68 @@ class MoviesDAOTests {
         verify(movieRepository).deleteById(5L);
     }
 
+    @Test
+    void findByProducerId_whenProducerExists_returnsMoviesForProducer() {
+        ProducerEntity producer = buildProducer(10L, "John Smith", "Award-winning producer.");
+        MovieEntity movie1 = buildEntity(
+                1L,
+                "Inception",
+                LocalDate.of(2010, 7, 16),
+                148,
+                Rating.PG_13,
+                "A thief enters dreams to steal corporate secrets.");
+        movie1.setProducer(producer);
+        
+        MovieEntity movie2 = buildEntity(
+                2L,
+                "The Dark Knight",
+                LocalDate.of(2008, 7, 18),
+                152,
+                Rating.PG_13,
+                "Batman faces the Joker.");
+        movie2.setProducer(producer);
+
+        when(producerRepository.findById(10L)).thenReturn(Optional.of(producer));
+        when(movieRepository.findByProducerId(10L)).thenReturn(List.of(movie1, movie2));
+
+        List<MovieVO> result = moviesDAO.findByProducerId(10L);
+
+        assertEquals(2, result.size());
+        assertEquals("Inception", result.get(0).getName());
+        assertEquals("The Dark Knight", result.get(1).getName());
+        assertEquals(10L, result.get(0).getProducerId());
+        assertEquals(10L, result.get(1).getProducerId());
+        verify(producerRepository).findById(10L);
+        verify(movieRepository).findByProducerId(10L);
+    }
+
+    @Test
+    void findByProducerId_whenProducerHasNoMovies_returnsEmptyList() {
+        ProducerEntity producer = buildProducer(10L, "John Smith", "Award-winning producer.");
+
+        when(producerRepository.findById(10L)).thenReturn(Optional.of(producer));
+        when(movieRepository.findByProducerId(10L)).thenReturn(List.of());
+
+        List<MovieVO> result = moviesDAO.findByProducerId(10L);
+
+        assertEquals(0, result.size());
+        verify(producerRepository).findById(10L);
+        verify(movieRepository).findByProducerId(10L);
+    }
+
+    @Test
+    void findByProducerId_whenProducerDoesNotExist_throwsItemNotFoundException() {
+        Long producerId = 99L;
+
+        when(producerRepository.findById(producerId)).thenReturn(Optional.empty());
+
+        ItemNotFoundException exception = assertThrows(ItemNotFoundException.class, () -> moviesDAO.findByProducerId(producerId));
+
+        assertEquals("Producer with id 99 not found", exception.getMessage());
+        verify(producerRepository).findById(producerId);
+        verify(movieRepository, never()).findByProducerId(org.mockito.ArgumentMatchers.anyLong());
+    }
+
     private MovieEntity buildEntity(
             Long id,
             String name,
