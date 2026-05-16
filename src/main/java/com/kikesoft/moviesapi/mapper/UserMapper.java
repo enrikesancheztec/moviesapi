@@ -3,6 +3,7 @@ package com.kikesoft.moviesapi.mapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.kikesoft.moviesapi.entity.Role;
 import com.kikesoft.moviesapi.entity.UserEntity;
 import com.kikesoft.moviesapi.vo.UserVO;
 
@@ -38,7 +39,7 @@ public final class UserMapper {
 
         LOGGER.debug("Mapper toVO - mapping entity id={}", entity.getId());
 
-        return new UserVO(entity.getId(), entity.getUsername(), null);
+        return new UserVO(entity.getId(), entity.getUsername(), null, entity.getRole());
     }
 
     /**
@@ -56,6 +57,7 @@ public final class UserMapper {
 
         LOGGER.debug("Mapper toEntity - mapping userVO id={}", userVO.getId());
 
-        return new UserEntity(userVO.getId(), userVO.getUsername(), userVO.getPassword());
+        Role role = userVO.getRole() != null ? userVO.getRole() : Role.USER;
+        return new UserEntity(userVO.getId(), userVO.getUsername(), userVO.getPassword(), role);
     }
 }

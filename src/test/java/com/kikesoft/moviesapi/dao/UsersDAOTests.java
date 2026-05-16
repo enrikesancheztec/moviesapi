@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.kikesoft.moviesapi.entity.Role;
 import com.kikesoft.moviesapi.entity.UserEntity;
 import com.kikesoft.moviesapi.exception.DuplicatedItemException;
 import com.kikesoft.moviesapi.exception.ItemNotFoundException;
@@ -35,14 +36,16 @@ class UsersDAOTests {
     @Test
     void findAll_returnsAllMappedUsers() {
         when(userRepository.findAll()).thenReturn(List.of(
-                buildEntity(1L, "alice", "secret1"),
-                buildEntity(2L, "bob", "secret2")));
+                buildEntity(1L, "alice", "secret1", Role.USER),
+                buildEntity(2L, "bob", "secret2", Role.USER)));
 
         List<UserVO> result = usersDAO.findAll();
 
         assertEquals(2, result.size());
         assertEquals("alice", result.get(0).getUsername());
         assertEquals("bob", result.get(1).getUsername());
+        assertEquals(Role.USER, result.get(0).getRole());
+        assertEquals(Role.USER, result.get(1).getRole());
         assertNull(result.get(0).getPassword());
         assertNull(result.get(1).getPassword());
         verify(userRepository).findAll();
@@ -50,12 +53,13 @@ class UsersDAOTests {
 
     @Test
     void findById_whenUserExists_returnsMappedUser() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(buildEntity(1L, "alice", "secret1")));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(buildEntity(1L, "alice", "secret1", Role.USER)));
 
         UserVO result = usersDAO.findById(1L);
 
         assertEquals(1L, result.getId());
         assertEquals("alice", result.getUsername());
+        assertEquals(Role.USER, result.getRole());
         assertNull(result.getPassword());
         verify(userRepository).findById(1L);
     }
@@ -73,7 +77,7 @@ class UsersDAOTests {
 
     @Test
     void add_whenUsernameDoesNotExist_persistsAndReturnsUser() {
-        UserEntity savedEntity = buildEntity(3L, "charlie", "pass123");
+        UserEntity savedEntity = buildEntity(3L, "charlie", "pass123", Role.USER);
         UserVO userToAdd = new UserVO(null, "charlie", "pass123");
 
         when(userRepository.findByUsername("charlie")).thenReturn(Optional.empty());
@@ -81,12 +85,14 @@ class UsersDAOTests {
                 && entity.isNew()
                 && entity.getId() == null
                 && "charlie".equals(entity.getUsername())
+            && entity.getRole() == Role.USER
                 && "pass123".equals(entity.getPassword())))).thenReturn(savedEntity);
 
         UserVO result = usersDAO.add(userToAdd);
 
         assertEquals(3L, result.getId());
         assertEquals("charlie", result.getUsername());
+        assertEquals(Role.USER, result.getRole());
         assertNull(result.getPassword());
         verify(userRepository).findByUsername("charlie");
         verify(userRepository).save(argThat(entity -> entity != null && entity.isNew()));
@@ -96,7 +102,7 @@ class UsersDAOTests {
     void add_whenUsernameAlreadyExists_throwsDuplicatedItemException() {
         UserVO userToAdd = new UserVO(null, "alice", "pass123");
 
-        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(buildEntity(1L, "alice", "secret1")));
+        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(buildEntity(1L, "alice", "secret1", Role.USER)));
 
         DuplicatedItemException exception = assertThrows(DuplicatedItemException.class,
                 () -> usersDAO.add(userToAdd));
@@ -113,7 +119,7 @@ class UsersDAOTests {
         verify(userRepository, never()).save(any(UserEntity.class));
     }
 
-    private UserEntity buildEntity(Long id, String username, String password) {
-        return new UserEntity(id, username, password);
+    private UserEntity buildEntity(Long id, String username, String password, Role role) {
+        return new UserEntity(id, username, password, role);
     }
 }

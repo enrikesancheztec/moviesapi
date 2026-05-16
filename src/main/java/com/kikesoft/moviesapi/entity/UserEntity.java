@@ -6,6 +6,8 @@ import org.springframework.data.domain.Persistable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -48,6 +50,13 @@ public class UserEntity implements Serializable, Persistable<Long> {
     private String password;
 
     /**
+     * User role stored as a string in the database.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
+    /**
      * Entity new-state flag used by Spring Data persistence semantics.
      * This field is not persisted to the database.
      */
@@ -68,9 +77,22 @@ public class UserEntity implements Serializable, Persistable<Long> {
      * @param password user password
      */
     public UserEntity(Long id, String username, String password) {
+        this(id, username, password, Role.USER);
+    }
+
+    /**
+     * Creates a user entity with all fields including role.
+     *
+     * @param id       user identifier
+     * @param username unique username
+     * @param password user password
+     * @param role     user role
+     */
+    public UserEntity(Long id, String username, String password, Role role) {
         this.id = id;
         this.username = username;
         this.password = password;
+        this.role = role != null ? role : Role.USER;
     }
 
     /**
@@ -154,5 +176,23 @@ public class UserEntity implements Serializable, Persistable<Long> {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /**
+     * Returns the user role.
+     *
+     * @return user role
+     */
+    public Role getRole() {
+        return role;
+    }
+
+    /**
+     * Sets the user role.
+     *
+     * @param role user role
+     */
+    public void setRole(Role role) {
+        this.role = role != null ? role : Role.USER;
     }
 }

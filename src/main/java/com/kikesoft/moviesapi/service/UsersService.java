@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.kikesoft.moviesapi.dao.UsersDAO;
+import com.kikesoft.moviesapi.entity.Role;
 import com.kikesoft.moviesapi.vo.UserVO;
 
 /**
@@ -64,6 +65,10 @@ public class UsersService {
      */
     public UserVO add(UserVO userVO) {
         LOGGER.debug("Service add - creating user with username='{}'", userVO != null ? userVO.getUsername() : null);
+
+        if (userVO != null) {
+            userVO.setRole(Role.USER);
+        }
 
         if (userVO != null && userVO.getPassword() != null) {
             userVO.setPassword(passwordEncoder.encode(userVO.getPassword()));

@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.kikesoft.moviesapi.dao.UsersDAO;
+import com.kikesoft.moviesapi.entity.Role;
 import com.kikesoft.moviesapi.vo.UserVO;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,7 +32,7 @@ class UsersServiceTests {
 
     @Test
     void findAll_delegatesToDao() {
-        List<UserVO> users = List.of(new UserVO(1L, "alice", null));
+        List<UserVO> users = List.of(new UserVO(1L, "alice", null, Role.USER));
 
         when(usersDAO.findAll()).thenReturn(users);
 
@@ -43,7 +44,7 @@ class UsersServiceTests {
 
     @Test
     void findById_delegatesToDao() {
-        UserVO user = new UserVO(1L, "alice", null);
+        UserVO user = new UserVO(1L, "alice", null, Role.USER);
 
         when(usersDAO.findById(1L)).thenReturn(user);
 
@@ -56,22 +57,46 @@ class UsersServiceTests {
     @Test
     void add_delegatesToDao() {
         UserVO input = new UserVO(null, "alice", "secret1");
-        UserVO saved = new UserVO(1L, "alice", null);
+        UserVO saved = new UserVO(1L, "alice", null, Role.USER);
 
         when(passwordEncoder.encode("secret1")).thenReturn("encoded-secret1");
         when(usersDAO.add(argThat(user -> user != null
                 && "alice".equals(user.getUsername())
+            && user.getRole() == Role.USER
                 && "encoded-secret1".equals(user.getPassword())))).thenReturn(saved);
 
         UserVO result = usersService.add(input);
 
         assertEquals(saved, result);
         assertNull(result.getPassword());
+        assertEquals(Role.USER, result.getRole());
         verify(passwordEncoder).encode("secret1");
         verify(usersDAO).add(argThat(user -> user != null
                 && "alice".equals(user.getUsername())
+            && user.getRole() == Role.USER
                 && "encoded-secret1".equals(user.getPassword())));
     }
+
+        @Test
+        void add_overridesProvidedAdminRoleWithUser() {
+        UserVO input = new UserVO(null, "alice", "secret1", Role.ADMIN);
+        UserVO saved = new UserVO(1L, "alice", null, Role.USER);
+
+        when(passwordEncoder.encode("secret1")).thenReturn("encoded-secret1");
+        when(usersDAO.add(argThat(user -> user != null
+            && "alice".equals(user.getUsername())
+            && user.getRole() == Role.USER
+            && "encoded-secret1".equals(user.getPassword())))).thenReturn(saved);
+
+        UserVO result = usersService.add(input);
+
+        assertEquals(saved, result);
+        assertEquals(Role.USER, result.getRole());
+        verify(usersDAO).add(argThat(user -> user != null
+            && "alice".equals(user.getUsername())
+            && user.getRole() == Role.USER
+            && "encoded-secret1".equals(user.getPassword())));
+        }
 
     @Test
     void add_whenDaoReturnsNull_returnsNull() {

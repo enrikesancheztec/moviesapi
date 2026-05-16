@@ -2,6 +2,8 @@ package com.kikesoft.moviesapi.vo;
 
 import java.io.Serializable;
 
+import com.kikesoft.moviesapi.entity.Role;
+
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -23,6 +25,8 @@ public class UserVO implements Serializable {
     @NotBlank(message = "Password is mandatory")
     private String password;
 
+    private Role role = Role.USER;
+
     /**
      * Creates an empty user value object.
      */
@@ -37,9 +41,22 @@ public class UserVO implements Serializable {
      * @param password user password (set to {@code null} in responses)
      */
     public UserVO(Long id, String username, String password) {
+        this(id, username, password, Role.USER);
+    }
+
+    /**
+     * Creates a user value object with all fields.
+     *
+     * @param id       user identifier
+     * @param username unique username
+     * @param password user password (set to {@code null} in responses)
+     * @param role     user role
+     */
+    public UserVO(Long id, String username, String password, Role role) {
         this.id = id;
         this.username = username;
         this.password = password;
+        this.role = role != null ? role : Role.USER;
     }
 
     /**
@@ -95,5 +112,23 @@ public class UserVO implements Serializable {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /**
+     * Returns the user role.
+     *
+     * @return role
+     */
+    public Role getRole() {
+        return role;
+    }
+
+    /**
+     * Sets the user role.
+     *
+     * @param role user role
+     */
+    public void setRole(Role role) {
+        this.role = role != null ? role : Role.USER;
     }
 }
