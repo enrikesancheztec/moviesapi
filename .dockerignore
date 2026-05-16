@@ -1,0 +1,5 @@
+env.properties
+.env
+target/
+.git/
+*.md
