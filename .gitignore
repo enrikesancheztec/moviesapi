@@ -34,3 +34,5 @@ build/
 
 ### Environment & Credentials ###
 env.properties
+.env
+.env.docker

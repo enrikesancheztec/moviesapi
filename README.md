@@ -57,6 +57,75 @@ logging.level.com.kikesoft.moviesapi=DEBUG
 jwt.tools.key=change-this-to-a-strong-secret-key
 ```
 
+### Docker Build (Multi-Stage)
+
+The Dockerfile uses a **multi-stage build** approach for optimal image size and security:
+
+**Stage 1 (Build):** `maven:3.9.9-eclipse-temurin-17`
+- Compiles the Java source code
+- Runs Maven to build the JAR artifact
+- Includes Maven, JDK, and build tools (all discarded after build)
+
+**Stage 2 (Runtime):** `eclipse-temurin:17-jre`
+- Contains only the Java Runtime Environment (JRE)
+- Copies the compiled JAR from Stage 1
+- Runs the application as non-root user (`appuser`)
+- Final image size: ~280MB (only essentials)
+
+**Benefits:**
+- ✅ Minimal image size (vs. 900MB+ with single-stage build)
+- ✅ Improved security (no build tools in production)
+- ✅ Faster container startup
+- ✅ Reduced attack surface
+
+### Docker Runtime with .env.docker
+
+When running the container, use `.env.docker` with `--env-file` to inject environment variables:
+
+Example `.env.docker` keys:
+
+```dotenv
+server.port=8080
+DB_URL=jdbc:mysql://host.docker.internal:3306/movies?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+DB_USERNAME=root
+DB_PASSWORD=changeme
+JPA_DDL_AUTO=update
+JPA_SHOW_SQL=true
+APP_CORS_ALLOWED_ORIGINS=http://localhost:3000
+APP_CORS_ALLOW_CREDENTIALS=true
+JWT_TOOLS_KEY=change-this-to-a-strong-secret-key
+logging.level.root=INFO
+logging.level.com.kikesoft.moviesapi=DEBUG
+```
+
+**Key differences from local setup:**
+- Use `host.docker.internal` instead of `localhost` for MySQL (macOS Docker Desktop feature)
+- Set explicit `server.port=8080` for Spring Boot inside container
+
+### Running the Container
+
+Build the image (only needed once or after code changes):
+
+```bash
+docker build -t moviesapi .
+```
+
+Run the container with environment file:
+
+```bash
+# Access on host port 8080
+docker run --rm --env-file .env.docker -p 8080:8080 moviesapi
+
+# Or use a different host port (e.g., 8081)
+docker run --rm --env-file .env.docker -p 8081:8080 moviesapi
+```
+
+The port mapping format is: `-p HOST_PORT:CONTAINER_PORT`
+- `8080:8080` - container port 8080 → host port 8080
+- `8081:8080` - container port 8080 → host port 8081
+
+Access the API at: `http://localhost:PORT/swagger-ui.html`
+
 ## Logging Configuration (Development)
 Recommended local logging configuration is:
 

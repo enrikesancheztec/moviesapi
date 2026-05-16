@@ -3,3 +3,5 @@ env.properties
 target/
 .git/
 *.md
+.mvn/
+mvnw
