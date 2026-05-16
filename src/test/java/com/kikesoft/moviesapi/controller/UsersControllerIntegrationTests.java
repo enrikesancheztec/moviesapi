@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,17 +29,29 @@ class UsersControllerIntegrationTests {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private Long userId;
+    private String bearerToken;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-        userId = createUser("alice", "secret1").getId();
+      userId = createUser("alice", passwordEncoder.encode("secret1")).getId();
+      bearerToken = loginAndGetToken("alice", "secret1");
+    }
+
+    @Test
+    void getAll_withoutToken_returnsUnauthorized() throws Exception {
+      mockMvc.perform(get("/users"))
+          .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getAll_returnsUserList() throws Exception {
-        mockMvc.perform(get("/users"))
+      mockMvc.perform(get("/users")
+          .header("Authorization", bearerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(userId))
                 .andExpect(jsonPath("$[0].username").value("alice"))
@@ -46,7 +60,8 @@ class UsersControllerIntegrationTests {
 
     @Test
     void getById_whenUserExists_returnsUser() throws Exception {
-        mockMvc.perform(get("/users/{id}", userId))
+      mockMvc.perform(get("/users/{id}", userId)
+          .header("Authorization", bearerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.username").value("alice"))
@@ -55,7 +70,8 @@ class UsersControllerIntegrationTests {
 
     @Test
     void getById_whenUserDoesNotExist_returnsNotFound() throws Exception {
-        mockMvc.perform(get("/users/999999"))
+      mockMvc.perform(get("/users/999999")
+          .header("Authorization", bearerToken))
                 .andExpect(status().isNotFound());
     }
 
@@ -135,5 +151,23 @@ class UsersControllerIntegrationTests {
         UserEntity user = new UserEntity(null, username, password);
         user.setNew(true);
         return userRepository.save(user);
+    }
+
+    private String loginAndGetToken(String username, String password) {
+      try {
+        MvcResult result = mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                      \"username\": \"%s\",
+                      \"password\": \"%s\"
+                    }
+                    """, username, password)))
+            .andExpect(status().isOk())
+            .andReturn();
+        return "Bearer " + result.getResponse().getContentAsString();
+      } catch (Exception e) {
+        throw new IllegalStateException("Unable to authenticate test user", e);
+      }
     }
 }

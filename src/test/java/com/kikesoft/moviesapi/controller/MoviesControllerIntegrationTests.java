@@ -7,17 +7,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import com.kikesoft.moviesapi.entity.MovieEntity;
 import com.kikesoft.moviesapi.entity.ProducerEntity;
+import com.kikesoft.moviesapi.entity.UserEntity;
 import com.kikesoft.moviesapi.enumeration.Rating;
 import com.kikesoft.moviesapi.repository.MovieRepository;
 import com.kikesoft.moviesapi.repository.ProducerRepository;
+import com.kikesoft.moviesapi.repository.UserRepository;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,21 +38,38 @@ class MoviesControllerIntegrationTests {
         @Autowired
         private ProducerRepository producerRepository;
 
+        @Autowired
+        private UserRepository userRepository;
+
+        @Autowired
+        private PasswordEncoder passwordEncoder;
+
     private Long movieId;
         private Long producerId;
+        private String bearerToken;
 
     @BeforeEach
     void setUp() {
                 movieRepository.deleteAll();
                 producerRepository.deleteAll();
+                userRepository.deleteAll();
+                createUser("alice", passwordEncoder.encode("secret1"));
+                bearerToken = loginAndGetToken("alice", "secret1");
                 ProducerEntity producer = createProducer("John Smith", "Award-winning producer.");
                 producerId = producer.getId();
                 movieId = createMovieOne(producer).getId();
+        }
+
+        @Test
+        void getMovieById_withoutToken_returnsUnauthorized() throws Exception {
+                mockMvc.perform(get("/movies/{id}", movieId))
+                                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isUnauthorized());
     }
 
     @Test
     void getMovieById_returnsExpectedMovie() throws Exception {
-        mockMvc.perform(get("/movies/{id}", movieId))
+        mockMvc.perform(get("/movies/{id}", movieId)
+                        .header("Authorization", bearerToken))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.id").value(movieId))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.name").value("Star Wars: Episode IV - A New Hope"))
@@ -62,13 +84,15 @@ class MoviesControllerIntegrationTests {
 
     @Test
     void getMovieById_notExistingMovie() throws Exception {
-        mockMvc.perform(get("/movies/999999"))
+        mockMvc.perform(get("/movies/999999")
+                        .header("Authorization", bearerToken))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
     void updateMovie_returnsUpdatedMovieAndPersistsChange() throws Exception {
         mockMvc.perform(put("/movies/{id}", movieId)
+                                .header("Authorization", bearerToken)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content("""
                 {
@@ -88,7 +112,8 @@ class MoviesControllerIntegrationTests {
                         .value("Updated integration test description."))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.producerId").value(producerId));
 
-        mockMvc.perform(get("/movies/{id}", movieId))
+        mockMvc.perform(get("/movies/{id}", movieId)
+                        .header("Authorization", bearerToken))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.id").value(movieId))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.name")
@@ -102,6 +127,7 @@ class MoviesControllerIntegrationTests {
     @Test
     void addMovie_withProducerId_returnsCreatedAndPersistsAssociation() throws Exception {
         mockMvc.perform(post("/movies")
+                                .header("Authorization", bearerToken)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content(String.format("""
                 {
@@ -123,6 +149,7 @@ class MoviesControllerIntegrationTests {
     @Test
     void addMovie_withoutProducerId_returnsBadRequest() throws Exception {
         mockMvc.perform(post("/movies")
+                                .header("Authorization", bearerToken)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content("""
                 {
@@ -143,6 +170,7 @@ class MoviesControllerIntegrationTests {
         Long mismatchedId = movieId + 98;
 
         mockMvc.perform(put("/movies/{id}", movieId)
+                .header("Authorization", bearerToken)
                 .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content(String.format("""
                 {
@@ -162,7 +190,8 @@ class MoviesControllerIntegrationTests {
 
     @Test
     void getAllMovies_withoutProducerIdParam_returnsAllMovies() throws Exception {
-        mockMvc.perform(get("/movies"))
+        mockMvc.perform(get("/movies")
+                        .header("Authorization", bearerToken))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(1))
@@ -173,7 +202,8 @@ class MoviesControllerIntegrationTests {
 
     @Test
     void getAllMovies_withValidProducerIdParam_returnsFilteredMovies() throws Exception {
-        mockMvc.perform(get("/movies?producerId={producerId}", producerId))
+        mockMvc.perform(get("/movies?producerId={producerId}", producerId)
+                        .header("Authorization", bearerToken))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(1))
@@ -183,7 +213,8 @@ class MoviesControllerIntegrationTests {
 
     @Test
     void getAllMovies_withInvalidProducerIdParam_returnsNotFound() throws Exception {
-        mockMvc.perform(get("/movies?producerId=999999"))
+        mockMvc.perform(get("/movies?producerId=999999")
+                        .header("Authorization", bearerToken))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNotFound());
     }
 
@@ -191,7 +222,8 @@ class MoviesControllerIntegrationTests {
     void getAllMovies_withValidProducerIdButNoMovies_returnsEmptyArray() throws Exception {
         ProducerEntity producerWithoutMovies = createProducer("Jane Doe", "Independent producer.");
 
-        mockMvc.perform(get("/movies?producerId={producerId}", producerWithoutMovies.getId()))
+        mockMvc.perform(get("/movies?producerId={producerId}", producerWithoutMovies.getId())
+                        .header("Authorization", bearerToken))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isArray())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isEmpty());
@@ -214,5 +246,29 @@ class MoviesControllerIntegrationTests {
                 ProducerEntity producer = new ProducerEntity(null, name, profile);
                 producer.setNew(true);
                 return producerRepository.save(producer);
+        }
+
+        private UserEntity createUser(String username, String password) {
+                UserEntity user = new UserEntity(null, username, password);
+                user.setNew(true);
+                return userRepository.save(user);
+        }
+
+        private String loginAndGetToken(String username, String password) {
+                try {
+                        MvcResult result = mockMvc.perform(post("/auth/login")
+                                                        .contentType(MediaType.APPLICATION_JSON)
+                                                        .content(String.format("""
+                                                                        {
+                                                                          \"username\": \"%s\",
+                                                                          \"password\": \"%s\"
+                                                                        }
+                                                                        """, username, password)))
+                                        .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                                        .andReturn();
+                        return "Bearer " + result.getResponse().getContentAsString();
+                } catch (Exception e) {
+                        throw new IllegalStateException("Unable to authenticate test user", e);
+                }
         }
 }

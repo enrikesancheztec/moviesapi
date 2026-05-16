@@ -5,8 +5,9 @@ import java.security.Key;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -15,7 +16,7 @@ import io.jsonwebtoken.security.Keys;
  *
  * @author Enrique Sanchez
  */
-@Service
+@Component
 public class JwtTools {
 
     /**
@@ -41,6 +42,39 @@ public class JwtTools {
                 .expiration(expiration)
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    /**
+     * Extracts the username (subject) from a token.
+     *
+     * @param token JWT token
+     * @return username
+     */
+    public String extractUsername(final String token) {
+        return Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
+    /**
+     * Validates token signature and expiration.
+     *
+     * @param token JWT token
+     * @return true when token is valid
+     */
+    public boolean isTokenValid(final String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith((javax.crypto.SecretKey) getSigningKey())
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
     /**
