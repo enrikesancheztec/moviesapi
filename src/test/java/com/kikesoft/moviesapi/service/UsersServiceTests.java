@@ -6,11 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.argThat;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.kikesoft.moviesapi.dao.UsersDAO;
 import com.kikesoft.moviesapi.vo.UserVO;
@@ -20,6 +22,9 @@ class UsersServiceTests {
 
     @Mock
     private UsersDAO usersDAO;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UsersService usersService;
@@ -53,13 +58,19 @@ class UsersServiceTests {
         UserVO input = new UserVO(null, "alice", "secret1");
         UserVO saved = new UserVO(1L, "alice", null);
 
-        when(usersDAO.add(input)).thenReturn(saved);
+        when(passwordEncoder.encode("secret1")).thenReturn("encoded-secret1");
+        when(usersDAO.add(argThat(user -> user != null
+                && "alice".equals(user.getUsername())
+                && "encoded-secret1".equals(user.getPassword())))).thenReturn(saved);
 
         UserVO result = usersService.add(input);
 
         assertEquals(saved, result);
         assertNull(result.getPassword());
-        verify(usersDAO).add(input);
+        verify(passwordEncoder).encode("secret1");
+        verify(usersDAO).add(argThat(user -> user != null
+                && "alice".equals(user.getUsername())
+                && "encoded-secret1".equals(user.getPassword())));
     }
 
     @Test
