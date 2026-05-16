@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -129,6 +130,18 @@ public class GlobalControllerAdvice {
     public ResponseEntity<Object> handleAuthenticationException(final AuthenticationException ae) {
         LOGGER.warn("Handled authentication exception: {}", ae.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+    }
+
+    /**
+     * Handles authorization failures and returns HTTP 403.
+     *
+     * @param ade access denied exception
+     * @return response entity with authorization error message
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDeniedException(final AccessDeniedException ade) {
+        LOGGER.warn("Handled access denied exception: {}", ade.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied");
     }
 
     /**

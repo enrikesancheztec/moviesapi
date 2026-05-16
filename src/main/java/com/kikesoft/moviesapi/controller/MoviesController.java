@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/movies")
+@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
 @Tag(name = "Movies", description = "Operations to retrieve, create and update movies")
 class MoviesController {
     private static final Logger LOGGER = LogManager.getLogger(MoviesController.class);

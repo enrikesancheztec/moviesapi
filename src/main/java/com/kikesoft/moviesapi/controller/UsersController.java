@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,7 @@ class UsersController {
      * @return list of users (password is never included)
      */
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all users", description = "Returns all users currently stored. Password is never included in the response.")
     @ApiResponse(responseCode = "200", description = "Users retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserVO.class))))
     ResponseEntity<List<UserVO>> getAll() {
@@ -63,6 +65,7 @@ class UsersController {
      * @return user representation (password is never included)
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get user by id", description = "Returns a user when the identifier exists. Password is never included in the response.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found", content = @Content(schema = @Schema(implementation = UserVO.class))),

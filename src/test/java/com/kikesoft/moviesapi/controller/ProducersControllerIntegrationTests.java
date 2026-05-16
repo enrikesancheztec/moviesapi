@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import com.kikesoft.moviesapi.entity.MovieEntity;
 import com.kikesoft.moviesapi.entity.ProducerEntity;
+import com.kikesoft.moviesapi.entity.Role;
 import com.kikesoft.moviesapi.entity.UserEntity;
 import com.kikesoft.moviesapi.enumeration.Rating;
 import com.kikesoft.moviesapi.repository.MovieRepository;
@@ -46,14 +47,17 @@ class ProducersControllerIntegrationTests {
 
     private Long producerId;
         private String bearerToken;
+                private String adminBearerToken;
 
     @BeforeEach
     void setUp() {
         movieRepository.deleteAll();
         producerRepository.deleteAll();
                 userRepository.deleteAll();
-                createUser("alice", passwordEncoder.encode("secret1"));
+                createUser("alice", passwordEncoder.encode("secret1"), Role.USER);
+                createUser("admin", passwordEncoder.encode("secret1"), Role.ADMIN);
                 bearerToken = loginAndGetToken("alice", "secret1");
+                adminBearerToken = loginAndGetToken("admin", "secret1");
         ProducerEntity producer = createProducer("John Smith", "Award-winning producer.");
         producerId = producer.getId();
         createMovieForProducer(producer);
@@ -64,6 +68,15 @@ class ProducersControllerIntegrationTests {
                 mockMvc.perform(get("/producers/{id}", producerId))
                                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isUnauthorized());
     }
+
+        @Test
+	void getProducerById_withAdminRole_succeeds() throws Exception {
+		mockMvc.perform(get("/producers/{id}", producerId)
+								.header("Authorization", adminBearerToken))
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.id").value(producerId))
+				.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.name").value("John Smith"));
+	}
 
     @Test
     void getProducerById_returnsExpectedProducer() throws Exception {
@@ -205,8 +218,9 @@ class ProducersControllerIntegrationTests {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$").isEmpty());
     }
 
-        private UserEntity createUser(String username, String password) {
+        private UserEntity createUser(String username, String password, Role role) {
                 UserEntity user = new UserEntity(null, username, password);
+                user.setRole(role);
                 user.setNew(true);
                 return userRepository.save(user);
         }

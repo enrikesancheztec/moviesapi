@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.kikesoft.moviesapi.entity.Role;
 import com.kikesoft.moviesapi.entity.UserEntity;
 import com.kikesoft.moviesapi.repository.UserRepository;
 
@@ -33,13 +34,16 @@ class UsersControllerIntegrationTests {
     private PasswordEncoder passwordEncoder;
 
     private Long userId;
-    private String bearerToken;
+    private String userBearerToken;
+    private String adminBearerToken;
 
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-      userId = createUser("alice", passwordEncoder.encode("secret1")).getId();
-      bearerToken = loginAndGetToken("alice", "secret1");
+        userId = createUser("alice", passwordEncoder.encode("secret1"), Role.USER).getId();
+        createUser("admin", passwordEncoder.encode("secret1"), Role.ADMIN);
+        userBearerToken = loginAndGetToken("alice", "secret1");
+        adminBearerToken = loginAndGetToken("admin", "secret1");
     }
 
     @Test
@@ -49,9 +53,16 @@ class UsersControllerIntegrationTests {
     }
 
     @Test
-    void getAll_returnsUserList() throws Exception {
+        void getAll_withUserRole_returnsForbidden() throws Exception {
       mockMvc.perform(get("/users")
-          .header("Authorization", bearerToken))
+          .header("Authorization", userBearerToken))
+            .andExpect(status().isForbidden());
+        }
+
+        @Test
+        void getAll_withAdminRole_returnsUserList() throws Exception {
+      mockMvc.perform(get("/users")
+          .header("Authorization", adminBearerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(userId))
                 .andExpect(jsonPath("$[0].username").value("alice"))
@@ -59,9 +70,16 @@ class UsersControllerIntegrationTests {
     }
 
     @Test
-    void getById_whenUserExists_returnsUser() throws Exception {
+        void getById_withUserRole_returnsForbidden() throws Exception {
       mockMvc.perform(get("/users/{id}", userId)
-          .header("Authorization", bearerToken))
+          .header("Authorization", userBearerToken))
+            .andExpect(status().isForbidden());
+        }
+
+        @Test
+        void getById_whenAdminRoleAndUserExists_returnsUser() throws Exception {
+      mockMvc.perform(get("/users/{id}", userId)
+          .header("Authorization", adminBearerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId))
                 .andExpect(jsonPath("$.username").value("alice"))
@@ -69,9 +87,9 @@ class UsersControllerIntegrationTests {
     }
 
     @Test
-    void getById_whenUserDoesNotExist_returnsNotFound() throws Exception {
+        void getById_whenAdminRoleAndUserDoesNotExist_returnsNotFound() throws Exception {
       mockMvc.perform(get("/users/999999")
-          .header("Authorization", bearerToken))
+          .header("Authorization", adminBearerToken))
                 .andExpect(status().isNotFound());
     }
 
@@ -147,8 +165,9 @@ class UsersControllerIntegrationTests {
                 .andExpect(jsonPath("$.password").doesNotExist());
     }
 
-    private UserEntity createUser(String username, String password) {
+    private UserEntity createUser(String username, String password, Role role) {
         UserEntity user = new UserEntity(null, username, password);
+      user.setRole(role);
         user.setNew(true);
         return userRepository.save(user);
     }
