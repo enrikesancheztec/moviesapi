@@ -8,6 +8,8 @@ A Spring Boot REST API for managing movie information.
 - Maven Wrapper (`./mvnw`)
 - MySQL
 - Spring Data JPA
+- Spring Security
+- JJWT 0.12.6
 - SpringDoc OpenAPI (Swagger UI)
 
 ## Project Origin
@@ -146,7 +148,14 @@ http://localhost:8080/swagger-ui.html
 http://localhost:8080/v3/api-docs
 ```
 
-4. Use Swagger UI to execute at least one endpoint.
+4. Authenticate before calling protected endpoints:
+   - Call `POST /auth/login` with valid credentials to get a JWT token.
+   - Click the **Authorize** button (lock icon) at the top of the Swagger UI page.
+   - Paste the token value (without the `Bearer ` prefix — Swagger adds it automatically).
+   - Click **Authorize** and close the dialog.
+   - All subsequent requests will include the `Authorization: Bearer <token>` header automatically.
+
+5. Use Swagger UI to execute at least one endpoint.
 
 ## API Endpoints
 Base URL:
@@ -313,21 +322,23 @@ Notes for update:
 
 ### Users
 
-| Method | Path | Description | Success Response |
-| --- | --- | --- | --- |
-| GET | `/users` | Returns all users. | `200 OK` with a JSON array of users (password is never included). |
-| GET | `/users/{id}` | Returns one user by id. | `200 OK` with a user JSON object (password is never included), or `404 Not Found` when missing. |
-| POST | `/users` | Creates a new user. | `201 Created` with the saved user JSON object (password is never included). |
+| Method | Path | Description | Auth Required | Success Response |
+| --- | --- | --- | --- | --- |
+| GET | `/users` | Returns all users. | `ADMIN` | `200 OK` with a JSON array of users (password is never included). |
+| GET | `/users/{id}` | Returns one user by id. | `ADMIN` | `200 OK` with a user JSON object (password is never included), or `404 Not Found` when missing. |
+| POST | `/users` | Creates a new user. | None (public) | `201 Created` with the saved user JSON object (password is never included). |
 
 User JSON fields:
 
 ```text
-id, username, password (request only)
+id, username, password (request only), role (response only)
 ```
 
 - `username` is mandatory and must be unique.
 - `password` is mandatory on `POST /users`.
 - `password` is **never** returned in any API response (always `null` or omitted).
+- `role` is always `USER` for publicly created accounts. `ADMIN` users can only be assigned at the database level.
+- `GET /users` and `GET /users/{id}` require an `ADMIN` role. A `USER` token will receive `403 Forbidden`.
 
 Example POST payload:
 
@@ -344,7 +355,8 @@ Example POST response payload:
 {
   "id": 1,
   "username": "alice",
-  "password": null
+  "password": null,
+  "role": "USER"
 }
 ```
 
@@ -355,12 +367,14 @@ Example GET `/users` response:
   {
     "id": 1,
     "username": "alice",
-    "password": null
+    "password": null,
+    "role": "USER"
   },
   {
     "id": 2,
     "username": "bob",
-    "password": null
+    "password": null,
+    "role": "USER"
   }
 ]
 ```
@@ -373,9 +387,9 @@ POST endpoint error responses:
 
 ### Auth
 
-| Method | Path | Description | Success Response |
-| --- | --- | --- | --- |
-| POST | `/auth/login` | Authenticates username and password, then generates a JWT. | `200 OK` with JWT as plain text. |
+| Method | Path | Description | Auth Required | Success Response |
+| --- | --- | --- | --- | --- |
+| POST | `/auth/login` | Authenticates username and password, then generates a JWT. | None (public) | `200 OK` with JWT as plain text. |
 
 Login request JSON fields:
 
@@ -386,6 +400,7 @@ username, password
 - `username` is mandatory.
 - `password` is mandatory.
 - Response body is the raw JWT string (not wrapped in JSON).
+- Tokens expire after 1 hour.
 
 Example login request:
 
@@ -404,10 +419,18 @@ eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZSIsImlhdCI6MTcxNDU5MDAwMCwiZXhwIjoxNzE0NTk
 
 You can validate and inspect the generated JWT at https://www.jwt.io/.
 
+Using the token on protected endpoints:
+
+```text
+Authorization: Bearer <token>
+```
+
 Login endpoint error responses:
 
 - `400 Bad Request` when request validation fails (blank username/password).
 - `401 Unauthorized` when credentials are invalid.
+- `401 Unauthorized` when a request to a protected endpoint is made without a token or with an expired token.
+- `403 Forbidden` when the authenticated user's role does not have permission to access the endpoint.
 
 ## Configuration Notes
 - Runtime database connection depends on external values from `env.properties` (imported by `application.properties`).
