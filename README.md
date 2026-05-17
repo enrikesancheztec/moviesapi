@@ -126,6 +126,94 @@ The port mapping format is: `-p HOST_PORT:CONTAINER_PORT`
 
 Access the API at: `http://localhost:PORT/swagger-ui.html`
 
+## Docker Compose (Full Stack)
+
+This repository includes a `docker-compose.yml` to run the full stack:
+
+- `db` (MySQL 8)
+- `api` (Movies API container)
+- `frontend` (Next.js app container)
+
+### Required Images
+
+Before running Docker Compose, these images must already exist locally:
+
+- `moviesapi:latest`
+- `movies-app:latest`
+
+Check available images:
+
+```bash
+docker image ls
+```
+
+Build backend image from this repository:
+
+```bash
+docker build -t moviesapi:latest .
+```
+
+Build frontend image from the `movies-app` repository:
+
+```bash
+docker build -t movies-app:latest .
+```
+
+### Create Compose Environment File
+
+Create `.env.compose` from the template:
+
+```bash
+cp .env.compose.example .env.compose
+```
+
+Then edit `.env.compose` with your local values.
+
+Important values:
+
+- `MYSQL_DATA_DIR=./docker/mysql-data` stores MySQL files on your filesystem
+- `MYSQL_PORT_HOST=13306`
+- `API_PORT_HOST=18080`
+- `FRONTEND_PORT_HOST=13000`
+
+### Run and Stop
+
+Start stack in background:
+
+```bash
+docker compose --env-file .env.compose up -d
+```
+
+Check status:
+
+```bash
+docker compose --env-file .env.compose ps
+```
+
+View logs:
+
+```bash
+docker compose --env-file .env.compose logs -f
+```
+
+Stop services:
+
+```bash
+docker compose --env-file .env.compose stop
+```
+
+Stop and remove containers/network:
+
+```bash
+docker compose --env-file .env.compose down
+```
+
+Stop and remove containers/network plus volumes (full DB reset):
+
+```bash
+docker compose --env-file .env.compose down -v
+```
+
 ## Logging Configuration (Development)
 Recommended local logging configuration is:
 

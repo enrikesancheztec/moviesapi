@@ -36,3 +36,8 @@ build/
 env.properties
 .env
 .env.docker
+.env.compose
+.env.local
+
+### Docker Data ###
+docker/mysql-data/
